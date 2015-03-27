@@ -25,13 +25,6 @@ const uint8_t INSTANTIATED = 0x02;
 #define mm_kw(code) (code==STATIC ? "static" : (code==INLINE ? "inline" : "instantiated") )
 #define mm_ID(str)  (str=="static" ? STATIC : (str=="inline" ? INLINE : (str=="instantiated" ? INSTANTIATED : INVALID) ) )
 
-//allocMode
-const uint8_t PREALLOC     = 0x00;
-const uint8_t DYNAMIC      = 0x01;
-
-#define am_kw(code) (code == PREALLOC ? "prealloc" : "dynamic")
-#define am_ID(str)  (str=="prealloc" ? PREALLOC : (str=="dynamic" ? DYNAMIC : INVALID) )
-
 static bool is_function_kw(string s) {
 	return rm_ID(s) != INVALID || mm_ID(s) != INVALID;
 }
@@ -46,7 +39,6 @@ class Function {
 public:
 	uint8_t runMode;
 	uint8_t memoryMode;
-	uint8_t allocMode = PREALLOC;
 	string functionName;
 
 	uint8_t nInputs = 0;
