@@ -264,11 +264,11 @@ static vector<Component> separateComponents() {
 	vector<Component> components;
 
 	// TODO exclude things like "][" or make alternative check
-	int32_t btbbrackets = lines.indexOf("][");
-	if (btbbrackets == -1)
-		btbbrackets = lines.indexOf("}{");
-	parse_validate(btbbrackets == -1, lines.lineNOfIndex(btbbrackets),
-			"Encountered illegal brackets at index", btbbrackets);
+	//int32_t btbbrackets = lines.indexOf("][");
+	//if (btbbrackets == -1)
+	//	btbbrackets = lines.indexOf("}{");
+	//parse_validate(btbbrackets == -1, lines.lineNOfIndex(btbbrackets),
+	//		"Encountered illegal brackets at index", btbbrackets);
 
 	uint32_t NOTHING = 0;
 
@@ -322,14 +322,14 @@ static vector<Component> separateComponents() {
 				inQuotes = false; // Encountered end
 			}
 		} else if ((c == '"' || c == '\'') && curlyCount == 0) { // If quotes found
-			parse_validate(current == PARAMETER || current == CONF_NODE,
+			parse_validate(current == PARAMETER || current == CONF_NODE || current == AUX_VAR,
 					lines.lineNOfIndex(i),
 					"Encountered unexpected \" at index",  lines.trueIndex(i));
 			inQuotes = true;
 		} else if (c == '<' &&
 				(i == 0 || lines.at(i - 1) <= ' ') &&
 				current != PARAMETER &&
-				current != CONF_NODE ) { // Open aux vars, make sure a space prepends and not a parameter
+				current != CONF_NODE) { // Open aux vars, make sure a space prepends and not a parameter
 			if (curlyCount == 0) {
 				parse_validate(components.at(components.size()-1).type == SPACE, lines.lineNOfIndex(i), "Expected space before <", lines.trueIndex(i));
 				components.pop_back(); // Back up the space
@@ -342,7 +342,8 @@ static vector<Component> separateComponents() {
 			}
 		} else if (c == '[') { // Open params
 			if (curlyCount == 0) {
-				parse_validate(current == NOTHING || current == CALL_NAME,
+				parse_validate((current == NOTHING || current == CALL_NAME) &&
+						(!(i == 0 || lines.at(i - 1) == ']') || i==0),
 						lines.lineNOfIndex(i),
 						"Encountered unexpected [ at index "
 								, lines.trueIndex(i));
@@ -359,7 +360,8 @@ static vector<Component> separateComponents() {
 			}
 		} else if (c == '{') { // Open conf nodes
 			if (curlyCount == 0) {
-				parse_validate(current == NOTHING || current == CALL_NAME,
+				parse_validate((current == NOTHING || current == CALL_NAME) &&
+						(!(i == 0 || lines.at(i - 1) == '}') || i==0),
 						lines.lineNOfIndex(i),
 						"Encountered unexpected { at index "
 								, lines.trueIndex(i));
