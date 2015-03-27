@@ -1,0 +1,13 @@
+// Othcode to C++ translator for simple mathematical functions
+
+simple sequence [a:Anything]:[b:typeof a] // Assignment
+	#C_CMD{"%t %n = %n;", a, b, a} // i.e. "bool b = a;"
+	#REMOVE_OTH_CMD
+
+simple sequence [a:Numeric,b:Numeric]+[c:strongerof a b] // Add
+	#C_CMD{"%t %n = %p + %p;", c, c, a, b} // i.e. "uint_64 c = a + b;"
+	#REMOVE_OTH_CMD
+
+simple sequence [a:Numeric]as{$type:NUMERIC_TYPE}[b:$type] // Cast function
+	#C_CMD{"%t %n = (%t)%n;", b, b, b, a} // i.e. "uint_64 b = (uint_64)a;"
+	#REMOVE_OTH_CMD
