@@ -1,6 +1,6 @@
 //TODO check for valid pipe names and method names
 
-instantiated sequence test <arbitraryThing:I32=0, asd:String> //TODO <-- process that
+instantiated sequence test{ll} <arbitraryThing:I32=0,asd:String> //TODO <-- process that
 	["1st pass:"]PRINT ["1st message"]shiftRegister[>]PRINTLN
 	["2nd pass:"]PRINT [?]shiftRegister[>]PRINTLN
 	["3rd pass:"]PRINT [?]shiftRegister[>]PRINTLN

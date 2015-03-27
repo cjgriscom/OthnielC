@@ -14,8 +14,9 @@ const uint32_t SPACE     = 2;
 const uint32_t CALL_NAME = 4;
 const uint32_t CONF_NODE = 8;
 const uint32_t COLON     = 16;
+const uint32_t AUX_VAR   = 32;
 
-static vector<ParsedCall> calls;
+static vector<ParsedCall> finalCalls;
 
 class Code {
 	string contents = "";
@@ -86,6 +87,8 @@ static Component getSpace(uint32_t beginIndex, uint32_t lineN) {
 	return c;
 }
 
+static vector<Component> separateComponents(); // Declare for recursive use
+
 static void addLine(int32_t lineN, string line) {
 	int32_t commentStart = line.find("//");
 	if (commentStart != line.npos) line = line.substr(0, commentStart); // Strip comments from line
@@ -94,11 +97,11 @@ static void addLine(int32_t lineN, string line) {
 }
 
 static void removeFirstN(int32_t num) {
-	calls.erase(calls.begin()+0, calls.begin()+num);
+	finalCalls.erase(finalCalls.begin()+0, finalCalls.begin()+num);
 }
 
 static ParsedCall get(uint32_t index) {
-	return calls[index];
+	return finalCalls[index];
 }
 
 static ParsedCall firstCall() {
@@ -106,11 +109,11 @@ static ParsedCall firstCall() {
 }
 
 static int32_t size() {
-	return calls.size();
+	return finalCalls.size();
 }
 
 static vector<ParsedCall> getCalls() {
-	return calls;
+	return finalCalls;
 }
 
 static bool isEmpty() {
@@ -140,15 +143,17 @@ static vector<string> adjoinedInsFromOuts(vector<string> outs) {
 	return ins;
 }
 
-static ParsedCall advance(ParsedCall currentCall, Component c) {
+static ParsedCall advance(ParsedCall currentCall, Component c, vector<ParsedCall> *calls) {
 	parse_validate(currentCall.callName != "UNDEFINED", c.lineN,
 			"Floating parameters at index",  c.beginIndex);
-	calls.push_back(currentCall);
+	(*calls).push_back(currentCall);
 	ParsedCall newCall;
 	return newCall;
 }
 
-static void processIntoCalls(vector<Component> components) {
+static vector<ParsedCall> processIntoCalls(vector<Component> *componentRef) {
+	vector<ParsedCall> calls;
+	vector<Component> components = *componentRef;
 	uint32_t expected = PARAMETER + CALL_NAME + COLON;
 	ParsedCall currentCall;
 	uint32_t lastType = SPACE; // Coming off of another line, theoretically a space exists in between
@@ -158,7 +163,7 @@ static void processIntoCalls(vector<Component> components) {
 		c = components[i];
 		currentCall.lineN = c.lineN;
 		verifyExpectedBit(expected, c.type, c.lineN,
-				"Unexpected thingy at index",  c.beginIndex);
+				"Unexpected thingy at index",  c.beginIndex); //XXX lol
 		lastType = type;
 		type = c.type;
 		if (type == PARAMETER) {
@@ -178,22 +183,44 @@ static void processIntoCalls(vector<Component> components) {
 			// Done processing params
 			if (lastType == CALL_NAME || lastType == CONF_NODE) { // I.E. this is an out parameter
 				currentCall.outParams = paramArray;
-				expected = CALL_NAME + SPACE + COLON;
+				expected = CALL_NAME + SPACE + COLON + AUX_VAR;
 			} else {  // I.E. this is an in parameter
 				currentCall.inParams = paramArray;
 				expected = CALL_NAME;
 			}
+		} else if (type == AUX_VAR) {
+
+			int32_t nParams = 0;
+			i--;
+			while (components.size() > i + 1
+					&& components[i + 1].type == AUX_VAR) {
+				i++;
+
+				// An empty param denotes empty brackets; we don't want to add them
+				parse_validate(components[i].content.size() != 0, components[i].lineN, "Empty auxiliary variable list");
+
+				nParams++;
+			}
+			vector<string> paramArray(nParams);
+			for (int32_t j = 0; j < nParams; j++) {
+				paramArray[j] = components[i - nParams + j + 1].content;
+			}
+			// Done processing vars
+
+			currentCall.auxVars = paramArray;
+			expected = CALL_NAME + SPACE + PARAMETER;
+
 		} else if (c.type == CALL_NAME) {
 			if (currentCall.outParams.size() != 0) { // Adjoined call
 				// Determine adjoined inputs and advance currentCall to new one
 				vector<string> newIns = adjoinedInsFromOuts(currentCall.outParams);
-				currentCall = advance(currentCall, c);
+				currentCall = advance(currentCall, c, &calls);
 				currentCall.inParams = newIns;
 			}
 			currentCall.callName = c.content;
-			expected = CONF_NODE + SPACE + PARAMETER + COLON;
+			expected = CONF_NODE + SPACE + PARAMETER + COLON + AUX_VAR;
 		} else if (c.type == CONF_NODE) {
-			expected = SPACE + PARAMETER + COLON;
+			expected = SPACE + PARAMETER + COLON + AUX_VAR;
 			int32_t nNodes = 0;
 			i--;
 			while (components.size() > i + 1
@@ -202,14 +229,20 @@ static void processIntoCalls(vector<Component> components) {
 				if (components[i].content.size() != 0)
 					nNodes++; // An empty param denotes empty brackets; we don't want to add them
 			}
-			vector<string> cnodes(nNodes);
+			vector<vector<ParsedCall>> cnodes(nNodes);
 			for (int32_t j = 0; j < nNodes; j++) {
-				cnodes[j] = components[i - nNodes + j + 1].content;
+				Component c = components[i - nNodes + j + 1];
+
+				lines.clear();
+				addLine(c.lineN, c.content);
+				vector<Component> confCmpnts = separateComponents();
+
+				cnodes[j] = processIntoCalls(&confCmpnts);
 			}
 			currentCall.confNodes = cnodes;
 		} else if (c.type == SPACE) {
 			// Advance currentCall to new one
-			currentCall = advance(currentCall, c);
+			currentCall = advance(currentCall, c, &calls);
 			expected = PARAMETER + CALL_NAME + COLON;
 		} else if (c.type == COLON) {
 			if (lastType == SPACE) {
@@ -221,7 +254,8 @@ static void processIntoCalls(vector<Component> components) {
 			}
 		}
 	}
-	advance(currentCall, c);
+	advance(currentCall, c, &calls);
+	return calls;
 }
 
 static vector<Component> separateComponents() {
@@ -229,7 +263,7 @@ static vector<Component> separateComponents() {
 
 	vector<Component> components;
 
-	// TODO exclude things like "]["
+	// TODO exclude things like "][" or make alternative check
 	int32_t btbbrackets = lines.indexOf("][");
 	if (btbbrackets == -1)
 		btbbrackets = lines.indexOf("}{");
@@ -261,10 +295,10 @@ static vector<Component> separateComponents() {
 		} else {
 			c = lines.at(i);
 		}
-
 		if (c <= ' ' && curlyCount == 0) { // Process space or tab IF
 			if (current != PARAMETER && // Not a parameter list
 					current != CONF_NODE && // Not a list of conf nodes
+					current != AUX_VAR && // Not a list of aux vars
 					(components.size() == 0
 							|| // At beginning of list
 							components[components.size() - 1].type != SPACE
@@ -292,6 +326,20 @@ static vector<Component> separateComponents() {
 					lines.lineNOfIndex(i),
 					"Encountered unexpected \" at index",  lines.trueIndex(i));
 			inQuotes = true;
+		} else if (c == '<' &&
+				(i == 0 || lines.at(i - 1) <= ' ') &&
+				current != PARAMETER &&
+				current != CONF_NODE ) { // Open aux vars, make sure a space prepends and not a parameter
+			if (curlyCount == 0) {
+				parse_validate(components.at(components.size()-1).type == SPACE, lines.lineNOfIndex(i), "Expected space before <", lines.trueIndex(i));
+				components.pop_back(); // Back up the space
+				parse_validate(current == NOTHING || current == CALL_NAME,
+						lines.lineNOfIndex(i),
+						"Encountered unexpected < at index "
+								, lines.trueIndex(i));
+				current = AUX_VAR;
+				beginIndex = i + 1;
+			}
 		} else if (c == '[') { // Open params
 			if (curlyCount == 0) {
 				parse_validate(current == NOTHING || current == CALL_NAME,
@@ -326,6 +374,21 @@ static vector<Component> separateComponents() {
 			}
 			curlyCount++;
 
+		} else if (c == '>' &&
+				(atEnd || lines.at(i + 1) <= ' ') &&
+				current != PARAMETER &&
+				current != CONF_NODE ) { // Make sure a space comes after
+			if (curlyCount == 0) {
+				parse_validate(current == AUX_VAR, lines.lineNOfIndex(i),
+						"Encountered unexpected > at index "
+								, lines.trueIndex(i));
+				string item = lines.substr_len(beginIndex, i);
+				components.push_back(
+						getComponent(current, item,
+								lines.trueIndex(beginIndex),
+								lines.lineNOfIndex(i)));
+				current = NOTHING;
+			}
 		} else if (c == ']') {
 			if (curlyCount == 0) {
 				parse_validate(current == PARAMETER, lines.lineNOfIndex(i),
@@ -354,7 +417,7 @@ static vector<Component> separateComponents() {
 			}
 			curlyCount--;
 		} else if (c == ',' && curlyCount <= 1) {
-			parse_validate(current == PARAMETER || current == CONF_NODE,
+			parse_validate(current == PARAMETER || current == CONF_NODE || current == AUX_VAR,
 					lines.lineNOfIndex(i),
 					"Encountered unexpected , at index",  lines.trueIndex(i));
 			components.push_back(
@@ -387,19 +450,18 @@ static vector<Component> separateComponents() {
 
 static void parse() {
 	//Clear calls
-	calls.clear();
+	finalCalls.clear();
 
 	vector<Component> components = separateComponents();
-	processIntoCalls(components);
+	finalCalls = processIntoCalls(&components);
 
 	//Clear old data
 	lines.clear();
 }
 
-static void test() {
+static void printCalls(vector<ParsedCall> *calls, char delim) {
 	int indent = 0;
-
-	for (ParsedCall call : calls) {
+	for (ParsedCall call : *calls) {
 		if (call.isBlockEnd) {
 			indent--;
 		}
@@ -416,8 +478,8 @@ static void test() {
 		cout << call.callName;
 		if (call.confNodes.size() > 0) {
 			cout << "{ ";
-			for (string param : call.confNodes) {
-				cout << param << " ";
+			for (vector<ParsedCall> param : call.confNodes) {
+				printCalls(&param, ' ');
 			}
 			cout << "}";
 		}
@@ -431,8 +493,20 @@ static void test() {
 			indent++;
 			cout << ":";
 		}
-		cout << endl;
+
+		if (call.auxVars.size() > 0) {
+			cout << " < ";
+			for (string param : call.auxVars) {
+				cout << param << " ";
+			}
+			cout << ">";
+		}
+		cout << delim;
 	}
+}
+
+static void test() {
+	printCalls(&finalCalls, '\n');
 }
 
 #endif

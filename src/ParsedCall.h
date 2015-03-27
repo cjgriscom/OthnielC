@@ -11,7 +11,8 @@ struct ParsedCall {
 	bool isBlockEnd = false;
 	vector<string> inParams;
 	vector<string> outParams;
-	vector<string> confNodes;
+	vector<string> auxVars;
+	vector<vector<ParsedCall>> confNodes;
 	string callName = "UNDEFINED";
 };
 
