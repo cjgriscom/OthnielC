@@ -21,9 +21,10 @@ const uint8_t PARALLEL     = 0x01;
 const uint8_t STATIC       = 0x00;
 const uint8_t INLINE       = 0x01;
 const uint8_t INSTANTIATED = 0x02;
+const uint8_t SIMPLE       = 0x03;
 
-#define mm_kw(code) (code==STATIC ? "static" : (code==INLINE ? "inline" : "instantiated") )
-#define mm_ID(str)  (str=="static" ? STATIC : (str=="inline" ? INLINE : (str=="instantiated" ? INSTANTIATED : INVALID) ) )
+#define mm_kw(code) (code==STATIC ? "static" : (code==INLINE ? "inline" : (code==SIMPLE ? "simple" : "instantiated")) )
+#define mm_ID(str)  (str=="static" ? STATIC : (str=="inline" ? INLINE : (str=="instantiated" ? INSTANTIATED : (str=="simple" ? SIMPLE : INVALID) ) ) )
 
 static bool is_function_kw(string s) {
 	return rm_ID(s) != INVALID || mm_ID(s) != INVALID;
