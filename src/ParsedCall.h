@@ -16,6 +16,6 @@ struct ParsedCall {
 	string callName = "UNDEFINED";
 };
 
-#define qualifiesAsKeyword(x) (x.inParams.size() == 0 && x.outParams.size() == 0 && x.confNodes.size() == 0 && !x.isBlockStart && !x.isBlockEnd)
+#define qualifiesAsKeyword(x) (x.inParams.size() == 0 && x.outParams.size() == 0 && x.auxVars.size() == 0 && x.confNodes.size() == 0 && !x.isBlockStart && !x.isBlockEnd)
 
 #endif /* PARSEDCALL_H_ */

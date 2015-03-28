@@ -32,8 +32,11 @@ static bool is_function_kw(string s) {
 
 struct AbstractCall {
 	string callID;
-	vector<uint16_t> inPipeIDs;
-	vector<uint16_t> outPipeIDs;
+	vector<string> inPipes;
+	vector<string> outPipes;
+	bool blockStart;
+	bool blockEnd;
+	vector<vector<AbstractCall>> confNodes;
 };
 
 class Function {
@@ -45,15 +48,13 @@ public:
 	uint8_t nInputs = 0;
 	uint8_t nOutputs = 0;
 
-	vector<bool> optionals;
-
 	/* The first nInputs are inputs,
 	 * the next nOutputs are outputs
-	 * Also includes variables
-	 *
-	 * Anything past 0xFF indicates a typeof index
+	 * the rest are auxiliary variables
 	 */
-	vector<uint16_t> pipeTypes;
+	vector<string> variables;
+	vector<string> variable_types;
+	vector<string> variable_defaults; // No default should be set to "". A default value for an input indicates optional.
 
 
 	vector<AbstractCall> callList;
