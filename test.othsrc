@@ -1,6 +1,6 @@
 //TODO check for valid pipe names and method names
 
-instantiated sequence test <arbitraryThing:I32=0, asd:String="heh">
+instantiated sequence test[] <arbitraryThing:I32=0>
 	["1st pass:"]PRINT ["1st message"]shiftRegister[>]PRINTLN
 	["2nd pass:"]PRINT [?]shiftRegister[>]PRINTLN
 	["3rd pass:"]PRINT [?]shiftRegister[>]PRINTLN
@@ -96,7 +96,7 @@ static sequence [write:Bool, value:I32]var5[glob:I32] [write, value]var2[glob]
 	
 instantiated sequence getDefault[r:I32=123] // Should NOT return null; seems good now
 	
-static sequence [bool1:Bool, bool2:Bool]printBooleanOps
+static sequence [bool1:Bool,bool2:Bool]printBooleanOps
 	[bool1, bool2]XOR[>]  ["Result of XOR:  ", <]PRINTLN
 	[bool1, bool2]AND[>]  ["Result of AND:  ", <]PRINTLN
 	[bool1, bool2]OR[>]   ["Result of OR:   ", <]PRINTLN

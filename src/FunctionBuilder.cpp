@@ -149,13 +149,22 @@ static void printCallsFB(int indent, vector<AbstractCall> *calls, char delim) {
 
 static void testFB(vector<Function> * fnctns) {
 	for (Function fn : *fnctns) {
-		cout << fn.functionName;
-		cout << " <";
-		for (string param : fn.variables) {
-			cout << param << ",";
+		bool hasAux = false;
+		cout << mm_kw(fn.memoryMode) << " " << rm_kw(fn.runMode) << " ";
+		for (int i = 0; i < fn.variables.size(); i++) {
+			if (fn.nInputs == 0) cout << fn.functionName;
+			if ((i == 0 && fn.nInputs > 0) || (i == fn.nInputs && fn.nOutputs > 0)) cout << "[";
+			if (i == fn.nInputs+fn.nOutputs) {cout << " <"; hasAux=true;}
+			cout << fn.variables[i] << ":" << fn.variable_types[i];
+			if (fn.variable_defaults[i].size() > 0) cout << "=" << fn.variable_defaults[i];
+			bool printAuxBracket = i == fn.variables.size()-1 && hasAux;
+			if (i == fn.nInputs-1 || i == fn.nInputs+fn.nOutputs-1) cout << "]";
+			else if (!printAuxBracket) cout << ", ";
+			if (i == fn.nInputs-1) cout << fn.functionName;
+			if (printAuxBracket) cout << ">";
 		}
-		cout << ">" << endl;
-
+		hasAux = false;
+		cout << endl;
 		printCallsFB(1, &(fn.callList), '\n');
 	}
 }
