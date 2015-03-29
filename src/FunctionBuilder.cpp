@@ -2,6 +2,7 @@
 #define PIPELINKER_CPP_
 
 #include <OthUtil.h>
+#include <OthFile.h>
 #include <Keywords.h>
 #include <Function.h>
 #include <ParsedCall.h>
@@ -114,24 +115,70 @@ static AbstractCall ACFromPC(ParsedCall call) {
 	return ac;
 }
 
-static void assembleFunctions(vector<Function> * fnctns, vector<ParsedCall> *calls) {
+static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 	bool inFunction = false;
 
 	for (uint32_t i = 0; i < (*calls).size(); i++) {
 		ParsedCall call = (*calls)[i];
 		if (!inFunction) { // Needs to start with a declaration
-			parse_validate(qualifiesAsKeyword(call), call.lineN, "Expected function declaration");
+			parse_validate(qualifiesAsKeyword(call), call.lineN, "Expected function declaration or directive");
 		}
 		if (qualifiesAsKeyword(call) && is_function_kw(call.callName)) { // Check for a header keyword
-			if (inFunction) (*fnctns).push_back(f); // Push previous function
+			parse_validate(qualifiesAsKeyword_strict(call), call.lineN, "Expected function declaration or directive");
+			if (inFunction) ((*file).functionList).push_back(f); // Push previous function
 			f = Function();
 			i = beginFunction(i, calls);
 			inFunction = true;
+		} else if (qualifiesAsKeyword(call) && is_directive_kw(call.callName)) {
+			// Directives always take place outside of functions (as of now) so assume end of function
+			inFunction = false;
+			switch (directive_ID(call.callName)) {
+				case VARIABLE: {
+					parse_validate(call.auxVars.size()==1,
+							call.lineN,
+							"Expected <name:type> expression as variable declaration");
+					parse_validate(call.confNodes.empty() &&
+							call.inParams.empty() &&
+							call.outParams.empty() &&
+							!call.isBlockStart &&
+							!call.isBlockEnd,
+							call.lineN,
+							"Could not parse variable declaration");
+
+					string exp = call.auxVars[0];
+
+					int16_t colonPos = exp.find(':');
+					parse_validate(colonPos != exp.npos, call.lineN, "Expected <name:type> expression as variable declaration");
+
+					string label = trim(exp.substr(0, colonPos));
+					string datatypeS = trim(exp.substr(colonPos+1));
+					string defaultValue = ""; // No default
+
+					int16_t equalPos = datatypeS.find('=');
+
+					if (equalPos != datatypeS.npos) { // If we found an equals expression
+						defaultValue = trim(datatypeS.substr(equalPos + 1)); // Separate default value
+						datatypeS = trim(datatypeS.substr(0, equalPos)); // and datatype
+					}
+
+					(*file).variables.push_back(label);
+					(*file).variable_types.push_back(datatypeS);
+					(*file).variable_defaults.push_back(defaultValue);
+
+				} break;
+				case IMPORT: {
+
+				} break;
+				case ALIAS: {
+
+				} break;
+			}
 		} else {
+			parse_validate(inFunction, call.lineN, "Expected function declaration or directive");
 			f.callList.push_back(ACFromPC(call));
 		}
 	}
-	(*fnctns).push_back(f);
+	((*file).functionList).push_back(f);
 }
 
 static void printCallsFB(int indent, vector<AbstractCall> *calls, char delim) {
@@ -184,8 +231,16 @@ static void printDeclaration(Function * fnctnRef) {
 	}
 }
 
-static void testFB(vector<Function> * fnctns) {
-	for (Function fn : *fnctns) {
+static void testFB(OthFile * file) {
+	for (int i = 0; i < (*file).variables.size(); i++) {
+		cout << "variable <" << (*file).variables[i] << ":" << (*file).variable_types[i];
+		if ((*file).variable_defaults[i].size() > 0) {
+			cout << "=" << (*file).variable_defaults[i] << ">" << endl;
+		} else {
+			cout << ">" << endl;
+		}
+	}
+	for (Function fn : (*file).functionList) {
 		bool hasAux = false;
 		cout << mm_kw(fn.memoryMode) << " " << rm_kw(fn.runMode) << " ";
 		if (fn.variables.size() == 0) printDeclaration(&fn);

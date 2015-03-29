@@ -2,6 +2,7 @@
 #define OTHFILE_H_
 
 #include <vector>
+#include <Function.h>
 #include <string>
 #include <map>
 #include <OthUtil.h>
@@ -12,6 +13,7 @@ class OthFile {
 public:
 	string path;
 
+	vector<string> imports;
 	map<string,string> aliases;
 
 	vector<string> variables;

@@ -1,7 +1,7 @@
 //TODO check for valid pipe names and method names
 
-//alias{../otherlib/omniwheels:calcPos, calcOmniPos}
-//variable <global1:String="">
+alias{../otherlib/omniwheels:calcPos, calcOmniPos}
+variable <global1:String="content">
 
 instantiated sequence test[] <arbitraryThing:I32=0>
 	["1st pass:"]PRINT ["1st message"]shiftRegister[>]PRINTLN
