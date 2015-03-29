@@ -1,5 +1,5 @@
-#ifndef PIPELINKER_CPP_
-#define PIPELINKER_CPP_
+#ifndef FUNCTIONBUILDER_CPP_
+#define FUNCTIONBUILDER_CPP_
 
 #include <OthUtil.h>
 #include <OthFile.h>
