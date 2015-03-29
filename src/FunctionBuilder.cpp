@@ -166,12 +166,60 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 					(*file).variable_defaults.push_back(defaultValue);
 
 				} break;
-				case IMPORT: {
-
-				} break;
 				case ALIAS: {
+					parse_validate(call.confNodes.size()==2 && call.confNodes[0].size() == 1 && call.confNodes[1].size() == 1,
+							call.lineN,
+							"Expected alias{methodPath,name} expression as alias declaration");
+					for (int i = 0; i < 3; i++) {
+						ParsedCall tempCall;
+						switch (i) {
+							case 0: tempCall = call; break;
+							case 1: tempCall = call.confNodes[0][0]; break;
+							case 2: tempCall = call.confNodes[1][0]; break;
+						}
 
+						parse_validate(tempCall.auxVars.empty() &&
+								tempCall.inParams.empty() &&
+								tempCall.outParams.empty() &&
+								!tempCall.isBlockStart &&
+								!tempCall.isBlockEnd,
+								tempCall.lineN,
+								"Could not parse alias");
+					}
+
+					(*file).aliases.push_back(
+							make_pair(
+									call.confNodes[0][0].callName,
+									call.confNodes[1][0].callName));
 				} break;
+				case IMPORT: {
+					parse_validate(
+							call.confNodes.size() == 1
+									&& call.confNodes[0].size() == 1, call.lineN,
+							"Expected import{path} expression as import declaration");
+					for (int i = 0; i < 2; i++) {
+						ParsedCall tempCall;
+						switch (i) {
+						case 0:
+							tempCall = call;
+							break;
+						case 1:
+							tempCall = call.confNodes[0][0];
+							break;
+						}
+
+						parse_validate(
+								tempCall.auxVars.empty()
+										&& tempCall.inParams.empty()
+										&& tempCall.outParams.empty()
+										&& !tempCall.isBlockStart
+										&& !tempCall.isBlockEnd, tempCall.lineN,
+								"Could not parse alias");
+					}
+
+					(*file).imports.push_back(call.confNodes[0][0].callName);
+				} break;
+
 			}
 		} else {
 			parse_validate(inFunction, call.lineN, "Expected function declaration or directive");
@@ -240,6 +288,14 @@ static void testFB(OthFile * file) {
 			cout << ">" << endl;
 		}
 	}
+	cout << endl;
+	for (int i = 0; i < (*file).aliases.size(); i++) {
+		cout << "alias{" << (*file).aliases[i].first << ", " << (*file).aliases[i].second << "}" << endl;
+	}
+	for (int i = 0; i < (*file).imports.size(); i++) {
+		cout << "import{" << (*file).imports[i] << "}" << endl;
+	}
+	cout << endl;
 	for (Function fn : (*file).functionList) {
 		bool hasAux = false;
 		cout << mm_kw(fn.memoryMode) << " " << rm_kw(fn.runMode) << " ";

@@ -1,5 +1,6 @@
 //TODO check for valid pipe names and method names
 
+import{../otherlib/gimmePizza:likeWaterfall}
 alias{../otherlib/omniwheels:calcPos, calcOmniPos}
 variable <global1:String="content">
 
