@@ -39,10 +39,10 @@ instantiated sequence test[] <arbitraryThing:I32=0>
 	//	case
 	//:END
 	
-	//block:
-	//	[42]:[theAnswer]	
-	//:end[theAnswer]
-	//[theAnswer]PRINTLN
+	BLOCK:
+		[42]:[theAnswer]	
+	:END[theAnswer]
+	[theAnswer]PRINTLN
 	
 	[TRUE, 50]var0[^] [FALSE, ?]var0[>]PRINTLN
 	[TRUE, 51]var1[^] [FALSE, 0]var1[>]PRINTLN
@@ -75,6 +75,8 @@ instantiated sequence test[] <arbitraryThing:I32=0>
 	["Min,max of ", int1, " and ", int2, ": "]PRINT [int1,int2]MINMAX[>, >] [<, ",", <]PRINTLN
 	["Min of ", int1, " and ", int2, ": "]PRINT [int1,int2]MINMAX[>, ^] [<]PRINTLN
 	["Max of ", int1, " and ", int2, ": "]PRINT [int1,int2]MINMAX[^, >]PRINTLN
+
+instantiated sequence empty{confNode1:pipe}
 
 static sequence [write:Bool, value:I32=0]var0[glob:I32] // Should behave statically
 	[write, value, glob]?:[glob]

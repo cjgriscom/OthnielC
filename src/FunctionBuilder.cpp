@@ -11,13 +11,33 @@ using namespace std;
 
 static Function f;
 
-static void parseDeclaration(ParsedCall *callRef) { //TODO add confnodes
+static void parseDeclaration(ParsedCall *callRef) {
 	ParsedCall call = *callRef;
 
 	f.functionName = call.callName;
 	f.nInputs = call.inParams.size();
 	f.nOutputs = call.outParams.size();
 	f.lineN = call.lineN;
+
+	for (vector<ParsedCall> confNode : call.confNodes) {
+		parse_validate(confNode.size() == 1, call.lineN, "Unexpected space in function configuration nodes");
+		parse_validate(confNode[0].auxVars.empty() &&
+				confNode[0].confNodes.empty() &&
+				confNode[0].inParams.empty() &&
+				confNode[0].outParams.empty() &&
+				!confNode[0].isBlockStart &&
+				!confNode[0].isBlockEnd,
+				call.lineN,
+				"Could not parse configuration node declaration");
+
+		string nodeExp = confNode[0].callName;
+
+		int16_t colonPos = nodeExp.find(':');
+		parse_validate(colonPos != nodeExp.npos, call.lineN, "Expected (label):(configuration node type)");
+
+		f.confNodes.push_back(trim(nodeExp.substr(0, colonPos)));
+		f.confNode_types.push_back(trim(nodeExp.substr(colonPos+1)));
+	}
 
 	for (uint32_t i = 0; i < f.nInputs+f.nOutputs+call.auxVars.size(); i++) {
 		// Retrieve exp from either inParams or outParams or auxVars
@@ -151,12 +171,26 @@ static void printCallsFB(int indent, vector<AbstractCall> *calls, char delim) {
 	}
 }
 
+static void printDeclaration(Function * fnctnRef) {
+	Function fn = *fnctnRef;
+	cout << fn.functionName;
+	if (fn.confNodes.size() > 0) {
+		cout << "{";
+		for (int i = 0; i < fn.confNodes.size(); i++) {
+			cout << fn.confNodes[i] << ":" << fn.confNode_types[i];
+			if (i < fn.confNodes.size()-1) cout << ", ";
+		}
+		cout << "}";
+	}
+}
+
 static void testFB(vector<Function> * fnctns) {
 	for (Function fn : *fnctns) {
 		bool hasAux = false;
 		cout << mm_kw(fn.memoryMode) << " " << rm_kw(fn.runMode) << " ";
+		if (fn.variables.size() == 0) printDeclaration(&fn);
 		for (int i = 0; i < fn.variables.size(); i++) {
-			if (fn.nInputs == 0) cout << fn.functionName;
+			if (fn.nInputs == 0) printDeclaration(&fn);
 			if ((i == 0 && fn.nInputs > 0) || (i == fn.nInputs && fn.nOutputs > 0)) cout << "[";
 			if (i == fn.nInputs+fn.nOutputs) {cout << " <"; hasAux=true;}
 			cout << fn.variables[i] << ":" << fn.variable_types[i];
@@ -164,7 +198,7 @@ static void testFB(vector<Function> * fnctns) {
 			bool printAuxBracket = i == fn.variables.size()-1 && hasAux;
 			if (i == fn.nInputs-1 || i == fn.nInputs+fn.nOutputs-1) cout << "]";
 			else if (!printAuxBracket) cout << ", ";
-			if (i == fn.nInputs-1) cout << fn.functionName;
+			if (i == fn.nInputs-1) printDeclaration(&fn);
 			if (printAuxBracket) cout << ">";
 		}
 		hasAux = false;
