@@ -99,22 +99,6 @@ static int beginFunction(unsigned int i, vector<ParsedCall> *calls) {
 
 }
 
-static AbstractCall ACFromPC(ParsedCall call) {
-	AbstractCall ac;
-	ac.blockStart = call.isBlockStart; ac.blockEnd = call.isBlockEnd;
-	ac.callID = call.callName;
-	ac.lineN = call.lineN;
-	ac.inPipes = call.inParams; ac.outPipes = call.outParams;
-	for (vector<ParsedCall> pcList : call.confNodes) {
-		vector<AbstractCall> acList;
-		for (ParsedCall pc : pcList) {
-			acList.push_back(ACFromPC(pc));
-		}
-		ac.confNodes.push_back(acList);
-	}
-	return ac;
-}
-
 static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 	bool inFunction = false;
 
@@ -223,42 +207,42 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 			}
 		} else {
 			parse_validate(inFunction, call.lineN, "Expected function declaration or directive");
-			f.callList.push_back(ACFromPC(call));
+			f.callList.push_back(call);
 		}
 	}
 	((*file).functionList).push_back(f);
 }
 
-static void printCallsFB(int indent, vector<AbstractCall> *calls, char delim) {
-	for (AbstractCall call : *calls) {
-		if (call.blockEnd) {
+static void printCallsFB(int indent, vector<ParsedCall> *calls, char delim) {
+	for (ParsedCall call : *calls) {
+		if (call.isBlockEnd) {
 			indent--;
 		}
 		for (int ind = 0; ind < indent; ind++) {
 			cout << "  ";
 		}
-		if (call.blockEnd)
+		if (call.isBlockEnd)
 			cout << ":";
 		cout << "[";
-		for (string param : call.inPipes) {
+		for (string param : call.inParams) {
 			cout << param << " ";
 		}
 		cout << "]";
-		cout << call.callID;
+		cout << call.callName;
 		if (call.confNodes.size() > 0) {
 			cout << "{ ";
-			for (vector<AbstractCall> param : call.confNodes) {
+			for (vector<ParsedCall> param : call.confNodes) {
 				printCallsFB(0, &param, ' ');
 			}
 			cout << "}";
 		}
 
 		cout << "[";
-		for (string param : call.outPipes) {
+		for (string param : call.outParams) {
 			cout << param << " ";
 		}
 		cout << "]";
-		if (call.blockStart) {
+		if (call.isBlockStart) {
 			indent++;
 			cout << ":";
 		}

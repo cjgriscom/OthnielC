@@ -6,18 +6,9 @@
 #include <Datatypes.h>
 #include <OthUtil.h>
 #include <Keywords.h>
+#include <ParsedCall.h>
 
 using namespace std;
-
-struct AbstractCall {
-	string callID;
-	vector<string> inPipes;
-	vector<string> outPipes;
-	bool blockStart;
-	bool blockEnd;
-	vector<vector<AbstractCall>> confNodes;
-	uint32_t lineN;
-};
 
 class Function {
 public:
@@ -41,7 +32,7 @@ public:
 	vector<string> confNodes;
 	vector<string> confNode_types;
 
-	vector<AbstractCall> callList;
+	vector<ParsedCall> callList;
 };
 
 #endif
