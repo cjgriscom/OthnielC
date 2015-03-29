@@ -3,10 +3,11 @@
 
 #include <string>
 #include <vector>
+#include <OthUtil.h>
 using namespace std;
 
 struct ParsedCall {
-	int lineN;
+	uint32_t lineN;
 	bool isBlockStart = false;
 	bool isBlockEnd = false;
 	vector<string> inParams;

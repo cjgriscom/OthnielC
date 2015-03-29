@@ -2,6 +2,7 @@
 #define PIPELINKER_CPP_
 
 #include <OthUtil.h>
+#include <Keywords.h>
 #include <Function.h>
 #include <ParsedCall.h>
 #include <string>
@@ -16,6 +17,7 @@ static void parseDeclaration(ParsedCall *callRef) { //TODO add confnodes
 	f.functionName = call.callName;
 	f.nInputs = call.inParams.size();
 	f.nOutputs = call.outParams.size();
+	f.lineN = call.lineN;
 
 	for (uint32_t i = 0; i < f.nInputs+f.nOutputs+call.auxVars.size(); i++) {
 		// Retrieve exp from either inParams or outParams or auxVars
@@ -52,12 +54,15 @@ static int beginFunction(unsigned int i, vector<ParsedCall> *calls) {
 	for (; i < (*calls).size(); i++) { // Use index from assembleFunctions()
 		ParsedCall call = (*calls)[i];
 
-		if (uint8_t test = rm_ID(call.callName) != INVALID) { // Check for correct behavior... TODO
+		uint8_t rm_test = rm_ID(call.callName);
+		uint8_t mm_test = mm_ID(call.callName);
+
+		if (rm_test != INVALID) {
 			parse_validate(rm == INVALID, call.lineN, "Too many run mode keywords in declaration");
-			rm = test;
-		} else if (uint8_t test = mm_ID(call.callName) != INVALID) {
+			rm = rm_test;
+		} else if (mm_test != INVALID) {
 			parse_validate(mm == INVALID, call.lineN, "Too many memory mode keywords in declaration");
-			mm = test;
+			mm = mm_test;
 		} else {
 			parse_validate(rm != INVALID && mm != INVALID, call.lineN, "Incomplete declaration");
 			f.runMode = rm;
@@ -66,8 +71,6 @@ static int beginFunction(unsigned int i, vector<ParsedCall> *calls) {
 			// calls(i) should now contain function declaration and stuff.
 			parseDeclaration(&call);
 
-			// Advance and return
-			//i++; XXX
 			return i;
 		}
 	}
@@ -79,6 +82,7 @@ static AbstractCall ACFromPC(ParsedCall call) {
 	AbstractCall ac;
 	ac.blockStart = call.isBlockStart; ac.blockEnd = call.isBlockEnd;
 	ac.callID = call.callName;
+	ac.lineN = call.lineN;
 	ac.inPipes = call.inParams; ac.outPipes = call.outParams;
 	for (vector<ParsedCall> pcList : call.confNodes) {
 		vector<AbstractCall> acList;
