@@ -105,28 +105,8 @@ static void addLine(int32_t lineN, string line) {
 	lines.addLine(lineN, line);
 }
 
-static void removeFirstN(int32_t num) {
-	finalCalls.erase(finalCalls.begin()+0, finalCalls.begin()+num);
-}
-
 static ParsedCall get(uint32_t index) {
 	return finalCalls[index];
-}
-
-static ParsedCall firstCall() {
-	return get(0);
-}
-
-static int32_t size() {
-	return finalCalls.size();
-}
-
-static vector<ParsedCall> getCalls() {
-	return finalCalls;
-}
-
-static bool isEmpty() {
-	return lines.length() == 0;
 }
 
 static vector<string> adjoinedInsFromOuts(vector<string> outs) {
