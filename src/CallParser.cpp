@@ -271,13 +271,6 @@ static vector<Component> separateComponents() {
 
 	vector<Component> components;
 
-	// TODO exclude things like "][" or make alternative check
-	//int32_t btbbrackets = lines.indexOf("][");
-	//if (btbbrackets == -1)
-	//	btbbrackets = lines.indexOf("}{");
-	//parse_validate(btbbrackets == -1, lines.lineNOfIndex(btbbrackets),
-	//		"Encountered illegal brackets at index", btbbrackets);
-
 	uint32_t NOTHING = 0;
 
 	int32_t beginIndex = 0;
