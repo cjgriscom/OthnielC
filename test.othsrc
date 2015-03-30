@@ -5,6 +5,12 @@ alias{../otherlib/omniwheels:calcPos, calcOmniPos}
 variable <global1:String="content">
 
 instantiated sequence test[] <arbitraryThing:I32=0>
+	
+	[3]dim{I32(1)}[pizzaToppings]                               // Create a String array of 3 elements
+	[pizzaToppings, 0,"pepperoni", 1,"sausage", 2,"shrooms"]set // sets indices 0-2
+	[pizzaToppings]length[len] [len, " Toppings: "]PRINT        // Prints “3 Toppings: ”
+	[pizzaToppings,0,1,2]index[>,>,>] [<, " ", <, " ", <]PRINT  // Prints “pepperoni sausage shrooms”
+	
 	["1st pass:"]PRINT ["1st message"]shiftRegister[>]PRINTLN
 	["2nd pass:"]PRINT [?]shiftRegister[>]PRINTLN
 	["3rd pass:"]PRINT [?]shiftRegister[>]PRINTLN
@@ -14,7 +20,7 @@ instantiated sequence test[] <arbitraryThing:I32=0>
 	[TRUE]:[someBoolean]
 	[12]:[a]
 	
-	EXECUTE{[a]++[a] ["EXECUTE: ", a, " is the new value of a"]PRINTLN}
+	EXECUTE{[a]++[a]:[>] ["EXECUTE: ", <, " is the new value of a"]PRINTLN}
 	EXECUTE{EXECUTE{[a]++[a] ["EXECUTE^2: ", a, " is the new value of a"]PRINTLN}}
 	["Main: a=", a]PRINTLN
 	

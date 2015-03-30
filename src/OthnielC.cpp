@@ -1,5 +1,6 @@
 #include <CallParser.cpp>
 #include <FunctionBuilder.cpp>
+#include <PipeManager.cpp>
 #include <OthFile.h>
 #include <iostream>
 #include <fstream>
@@ -17,6 +18,7 @@ int main(int argc, char **argv) {
 
 	OthFile file;
 	assembleFile(&file, &finalCalls);
+	setPipeCodes(file);
 	testFB(&file);
 
 }
