@@ -99,6 +99,22 @@ static int beginFunction(unsigned int i, vector<ParsedCall> *calls) {
 
 }
 
+static void validateBlocks(Function &function) {
+	int nesting_depth = 0;
+	ParsedCall latestCall;
+	for (ParsedCall &call : function.callList) {
+		latestCall = call;
+		if (call.isBlockEnd) {
+			parse_validate(nesting_depth > 0, call.lineN, "Encountered closing block statement when no blocks were open");
+			nesting_depth--;
+		}
+		if (call.isBlockStart) {
+			nesting_depth++;
+		}
+	}
+	parse_validate(nesting_depth == 0, latestCall.lineN, "Hanging block opening at the end of function " + function.functionName);
+}
+
 static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 	bool inFunction = false;
 
@@ -109,7 +125,10 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 		}
 		if (qualifiesAsKeyword(call) && is_function_kw(call.callName)) { // Check for a header keyword
 			parse_validate(qualifiesAsKeyword_strict(call), call.lineN, "Expected function declaration or directive");
-			if (inFunction) ((*file).functionList).push_back(f); // Push previous function
+			if (inFunction) {
+				validateBlocks(f); // Validate blocks
+				((*file).functionList).push_back(f); // Push previous function
+			}
 			f = Function();
 			i = beginFunction(i, calls);
 			inFunction = true;
@@ -210,7 +229,8 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 			f.callList.push_back(call);
 		}
 	}
-	((*file).functionList).push_back(f);
+	validateBlocks(f); // Validate blocks
+	((*file).functionList).push_back(f); // Push final function
 }
 
 static void printCallsFB(int indent, vector<ParsedCall> *calls, char delim) {
