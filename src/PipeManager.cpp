@@ -13,7 +13,7 @@
 
 using namespace std;
 
-static int replaceForwardingCharacters(vector<ParsedCall> &calls, int startID) {
+static int replaceForwardingCharacters(vector<ParsedCall> &calls, int startID) { //TODO I think this might have an issue with blocks....
 	queue<string> forwardedPipes;
 	int replacementID = startID;
 	for (int callN = 0; callN < calls.size(); callN++) {

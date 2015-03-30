@@ -23,19 +23,28 @@ class Code {
 	map<int32_t, int32_t> lineNMap;
 public:
 	void addLine(int32_t lineN, string line) {
-		lineNMap.insert(std::pair<int32_t,int32_t>(contents.length(), lineN));
+		lineNMap[contents.length()] = lineN;
 		if (contents.length() != 0) contents += " ";
 		contents = contents + trim(line);
 	}
 
+	pair<int,int> getPairBeforeIndex(int32_t index) {
+		pair<int,int> oldPair(0,0);
+		for (pair<int,int> p : lineNMap) {
+			if (p.first >= index) return oldPair;
+			oldPair = p;
+		}
+		return pair<int,int>(lineNMap.rbegin()->first, lineNMap.rbegin()->second);
+	}
+
 	int32_t lineNOfIndex(int32_t index) {
-		std::map<int,int>::iterator lineBase = lineNMap.lower_bound(index);
-		return lineBase == lineNMap.end() ? -1 : lineBase->second;
+		pair<int,int> lineBase = getPairBeforeIndex(index);
+		return lineBase.second;
 	}
 
 	int32_t trueIndex(int32_t index) { // TODO deal with whitespace
-		std::map<int,int>::iterator lineBase = lineNMap.lower_bound(index);
-		return lineBase == lineNMap.end() ? -1 : index - lineBase->second;
+		pair<int,int> lineBase = getPairBeforeIndex(index);
+		return index - lineBase.first;
 	}
 
 	int32_t length() {
