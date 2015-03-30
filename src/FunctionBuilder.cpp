@@ -68,12 +68,12 @@ static void parseDeclaration(ParsedCall *callRef) {
 
 }
 
-static int beginFunction(unsigned int i, vector<ParsedCall> *calls) {
+static int beginFunction(unsigned int i, vector<ParsedCall> &calls) {
 	uint8_t rm = INVALID;
 	uint8_t mm = INVALID;
 
-	for (; i < (*calls).size(); i++) { // Use index from assembleFunctions()
-		ParsedCall call = (*calls)[i];
+	for (; i < calls.size(); i++) { // Use index from assembleFunctions()
+		ParsedCall call = calls[i];
 
 		uint8_t rm_test = rm_ID(call.callName);
 		uint8_t mm_test = mm_ID(call.callName);
@@ -115,11 +115,11 @@ static void validateBlocks(Function &function) {
 	parse_validate(nesting_depth == 0, latestCall.lineN, "Hanging block opening at the end of function " + function.functionName);
 }
 
-static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
+static void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 	bool inFunction = false;
 
-	for (uint32_t i = 0; i < (*calls).size(); i++) {
-		ParsedCall call = (*calls)[i];
+	for (uint32_t i = 0; i < calls.size(); i++) {
+		ParsedCall call = calls[i];
 		if (!inFunction) { // Needs to start with a declaration
 			parse_validate(qualifiesAsKeyword(call), call.lineN, "Expected function declaration or directive");
 		}
@@ -127,7 +127,7 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 			parse_validate(qualifiesAsKeyword_strict(call), call.lineN, "Expected function declaration or directive");
 			if (inFunction) {
 				validateBlocks(f); // Validate blocks
-				((*file).functionList).push_back(f); // Push previous function
+				file.functionList.push_back(f); // Push previous function
 			}
 			f = Function();
 			i = beginFunction(i, calls);
@@ -164,9 +164,9 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 						datatypeS = trim(datatypeS.substr(0, equalPos)); // and datatype
 					}
 
-					(*file).variables.push_back(label);
-					(*file).variable_types.push_back(datatypeS);
-					(*file).variable_defaults.push_back(defaultValue);
+					file.variables.push_back(label);
+					file.variable_types.push_back(datatypeS);
+					file.variable_defaults.push_back(defaultValue);
 
 				} break;
 				case ALIAS: {
@@ -190,7 +190,7 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 								"Could not parse alias");
 					}
 
-					(*file).aliases.push_back(
+					file.aliases.push_back(
 							make_pair(
 									call.confNodes[0][0].callName,
 									call.confNodes[1][0].callName));
@@ -220,7 +220,7 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 								"Could not parse alias");
 					}
 
-					(*file).imports.push_back(call.confNodes[0][0].callName);
+					file.imports.push_back(call.confNodes[0][0].callName);
 				} break;
 
 			}
@@ -231,7 +231,7 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 	}
 	if (f.functionName.size() > 0) {// if at least one function was processed
 		validateBlocks(f); // Validate blocks
-		((*file).functionList).push_back(f); // Push final function
+		file.functionList.push_back(f); // Push final function
 	}
 }
 

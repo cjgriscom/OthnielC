@@ -160,9 +160,8 @@ static ParsedCall advance(ParsedCall currentCall, Component c, vector<ParsedCall
 	return newCall;
 }
 
-static vector<ParsedCall> processIntoCalls(vector<Component> *componentRef) {
+static vector<ParsedCall> processIntoCalls(vector<Component> &components) {
 	vector<ParsedCall> calls;
-	vector<Component> components = *componentRef;
 	uint32_t expected = PARAMETER + CALL_NAME + COLON;
 	ParsedCall currentCall;
 	uint32_t lastType = SPACE; // Coming off of another line, theoretically a space exists in between
@@ -246,7 +245,7 @@ static vector<ParsedCall> processIntoCalls(vector<Component> *componentRef) {
 				addLine(c.lineN, c.content);
 				vector<Component> confCmpnts = separateComponents();
 
-				cnodes[j] = processIntoCalls(&confCmpnts);
+				cnodes[j] = processIntoCalls(confCmpnts);
 			}
 			currentCall.confNodes = cnodes;
 		} else if (c.type == SPACE) {
@@ -464,7 +463,7 @@ static void parse() {
 	finalCalls.clear();
 
 	vector<Component> components = separateComponents();
-	finalCalls = processIntoCalls(&components);
+	finalCalls = processIntoCalls(components);
 
 	//Clear old data
 	lines.clear();

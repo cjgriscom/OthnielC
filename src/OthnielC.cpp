@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 	parse();
 
 	OthFile file;
-	assembleFile(&file, &finalCalls);
+	assembleFile(file, finalCalls);
 	setPipeCodes(file);
 	testFB(&file);
 
