@@ -229,8 +229,10 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 			f.callList.push_back(call);
 		}
 	}
-	validateBlocks(f); // Validate blocks
-	((*file).functionList).push_back(f); // Push final function
+	if (f.functionName.size() > 0) {// if at least one function was processed
+		validateBlocks(f); // Validate blocks
+		((*file).functionList).push_back(f); // Push final function
+	}
 }
 
 static void printCallsFB(int indent, vector<ParsedCall> *calls, char delim) {
