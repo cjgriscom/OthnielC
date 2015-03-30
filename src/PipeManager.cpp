@@ -16,8 +16,10 @@ using namespace std;
 static int replaceForwardingCharacters(vector<ParsedCall> &calls, int startID) { //TODO I think this might have an issue with blocks....
 	queue<string> forwardedPipes;
 	int replacementID = startID;
+	ParsedCall call;
+	int lastForwardIndex = 0;
 	for (int callN = 0; callN < calls.size(); callN++) {
-		ParsedCall call = calls[callN];
+		call = calls[callN];
 		for (string &param : call.inParams) {
 			parse_validate(param != ">", call.lineN, "Encountered > pipe in inputs");
 			if (param == "<") {
@@ -30,9 +32,10 @@ static int replaceForwardingCharacters(vector<ParsedCall> &calls, int startID) {
 			parse_validate(param != "<", call.lineN, "Encountered < pipe in outputs");
 			if (param == ">") {
 				std::stringstream ss;
-				ss << "_fwd_" << replacementID++;
+				ss << "_fwd_" << replacementID++ << "_" << call.lineN;
 				param = ss.str();
 				forwardedPipes.push(ss.str());
+				lastForwardIndex = call.lineN; //for error messages if needed
 			}
 		}
 		for (vector<ParsedCall> &confNodes : call.confNodes) {
@@ -40,6 +43,7 @@ static int replaceForwardingCharacters(vector<ParsedCall> &calls, int startID) {
 		}
 		calls[callN] = call;
 	}
+	parse_validate(forwardedPipes.empty(), lastForwardIndex, "Hanging forwarding pipes left at end of function");
 	return replacementID;
 }
 
