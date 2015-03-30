@@ -25,7 +25,7 @@ public:
 	void addLine(int32_t lineN, string line) {
 		lineNMap[contents.length()] = lineN;
 		if (contents.length() != 0) contents += " ";
-		contents = contents + trim(line);
+		contents = contents + line;
 	}
 
 	pair<int,int> getPairBeforeIndex(int32_t index) {

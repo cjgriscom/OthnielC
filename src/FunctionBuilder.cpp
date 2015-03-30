@@ -215,7 +215,6 @@ static void assembleFile(OthFile * file, vector<ParsedCall> *calls) {
 
 static void printCallsFB(int indent, vector<ParsedCall> *calls, char delim) {
 	for (ParsedCall call : *calls) {
-		cout << call.lineN ;
 		if (call.isBlockEnd) {
 			indent--;
 		}
@@ -283,7 +282,7 @@ static void testFB(OthFile * file) {
 	cout << endl;
 	for (Function fn : (*file).functionList) {
 		bool hasAux = false;
-		cout << fn.lineN << mm_kw(fn.memoryMode) << " " << rm_kw(fn.runMode) << " ";
+		cout << mm_kw(fn.memoryMode) << " " << rm_kw(fn.runMode) << " ";
 		if (fn.variables.size() == 0) printDeclaration(&fn);
 		for (int i = 0; i < fn.variables.size(); i++) {
 			if (fn.nInputs == 0) printDeclaration(&fn);
