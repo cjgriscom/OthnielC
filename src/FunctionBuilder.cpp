@@ -189,10 +189,14 @@ static void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 								tempCall.lineN,
 								"Could not parse alias");
 					}
-
+					string callName = call.confNodes[0][0].callName;
+					parse_validate(
+							callName[0] == '\"' &&
+							callName[callName.size()-1] == '\"',
+							call.lineN, "Expected string constant");
 					file.aliases.push_back(
 							make_pair(
-									call.confNodes[0][0].callName,
+									callName,
 									call.confNodes[1][0].callName));
 				} break;
 				case IMPORT: {
@@ -217,10 +221,14 @@ static void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 										&& tempCall.outParams.empty()
 										&& !tempCall.isBlockStart
 										&& !tempCall.isBlockEnd, tempCall.lineN,
-								"Could not parse alias");
+								"Could not parse import");
 					}
-
-					file.imports.push_back(call.confNodes[0][0].callName);
+					string callName = call.confNodes[0][0].callName;
+					parse_validate(
+							callName[0] == '\"' &&
+							callName[callName.size()-1] == '\"',
+							call.lineN, "Expected string constant");
+					file.imports.push_back(callName);
 				} break;
 
 			}
