@@ -1,0 +1,22 @@
+static sequence [write:Bool, value:I32=0]var0[glob:I32] // Should behave statically
+	[write, value, glob]?:[glob]
+	
+inline sequence [write:Bool, value:Anything]var1[glob:typeof value] // Should not
+	[write, value, glob]?:[glob]
+	
+instantiated sequence [write:Bool, value:Anything]var2[globB:typeof value] // Should not
+	[write, value, globB]?:[globB]
+	
+static sequence [write:Bool, value:I32]var3[glob:I32] // Should
+	[write, value]var0[glob]
+	
+// Should
+static sequence [write:Bool, value:I32]var4[glob:I32] [write, value]var1[glob]
+
+// Should
+static sequence [write:Bool, value:Double]var4Double[glob:Double] [write, value]var1[glob]
+
+// Should not
+static sequence [write:Bool, value:I32]var5[glob:I32] [write, value]var2[glob]
+	
+instantiated sequence getDefault[r:I32=123] // Should NOT return null; seems good now

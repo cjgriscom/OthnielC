@@ -1,7 +1,7 @@
 //TODO check for valid pipe names and method names
 
-import{../otherlib/gimmePizza:likeWaterfall}
-alias{../otherlib/omniwheels:calcPos, calcOmniPos}
+import{"test_methods"}
+alias{"test_shiftregister:stringRegister", shiftRegister}
 variable <global1:String="content">
 
 instantiated sequence test[] <arbitraryThing:I32=0>
