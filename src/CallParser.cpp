@@ -96,7 +96,7 @@ static Component getSpace(uint32_t beginIndex, uint32_t lineN) {
 	return c;
 }
 
-static vector<Component> separateComponents(); // Declare for recursive use
+static vector<Component> separateComponents(bool permitConstants); // Declare for recursive use
 
 static void addLine(int32_t lineN, string line) {
 	int32_t commentStart = line.find("//");
@@ -223,7 +223,7 @@ static vector<ParsedCall> processIntoCalls(vector<Component> &components) {
 
 				lines.clear();
 				addLine(c.lineN, c.content);
-				vector<Component> confCmpnts = separateComponents();
+				vector<Component> confCmpnts = separateComponents(1);
 
 				cnodes[j] = processIntoCalls(confCmpnts);
 			}
@@ -246,7 +246,7 @@ static vector<ParsedCall> processIntoCalls(vector<Component> &components) {
 	return calls;
 }
 
-static vector<Component> separateComponents() {
+static vector<Component> separateComponents(bool permitConstants) {
 	// Deconstruct line byte by byte
 
 	vector<Component> components;
@@ -302,7 +302,7 @@ static vector<Component> separateComponents() {
 			if (c == '"' || c == '\'') {
 				inQuotes = false; // Encountered end
 			}
-		} else if ((c == '"' || c == '\'') && curlyCount == 0) { // If quotes found
+		} else if ((c == '"' || c == '\'') && (curlyCount == 0 && !permitConstants)) { // If quotes found
 			parse_validate(current == PARAMETER || current == CONF_NODE || current == AUX_VAR,
 					lines.lineNOfIndex(i),
 					"Encountered unexpected \" at index",  lines.trueIndex(i));
@@ -435,7 +435,7 @@ static void parse() {
 	//Clear calls
 	finalCalls.clear();
 
-	vector<Component> components = separateComponents();
+	vector<Component> components = separateComponents(0);
 	finalCalls = processIntoCalls(components);
 
 	//Clear old data
