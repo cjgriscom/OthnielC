@@ -18,5 +18,5 @@ static sequence [write:Bool, value:Double]var4Double[glob:Double] [write, value]
 
 // Should not
 static sequence [write:Bool, value:I32]var5[glob:I32] [write, value]var2[glob]
-	
-instantiated sequence getDefault[r:I32=123] // Should NOT return null; seems good now
+
+instantiated sequence getDefault[r:I32=123]  // Should NOT return null; seems good now

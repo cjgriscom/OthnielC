@@ -21,6 +21,16 @@ inline string trim(string s) {
 	return ((start > 0) || (len < s.length())) ?
 			s.substr(start, len - start) : s;
 }
+inline string trim_end(string s) {
+	string::size_type len = s.length();
+	string::size_type start = 0;
+
+	while ((start < len) && (s.at(len - 1) <= ' ')) {
+		len--;
+	}
+	return ((start > 0) || (len < s.length())) ?
+			s.substr(start, len - start) : s;
+}
 
 static void parse_validate(bool condition, int32_t lineN, string problem) {
 	if (!condition) {

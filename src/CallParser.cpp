@@ -64,6 +64,10 @@ public:
 		return contents.substr(paramInt1, paramInt2-paramInt1);
 	}
 
+	void begin_parse() {
+		contents = trim_end(contents); // The parser doesn't like trailing whitespace on the last line
+	}
+
 	void clear() {
 		contents = "";
 		lineNMap.clear();
@@ -432,6 +436,9 @@ static vector<Component> separateComponents(bool permitConstants) {
 }
 
 static void parse() {
+	//Initiate
+	lines.begin_parse();
+
 	//Clear calls
 	finalCalls.clear();
 
