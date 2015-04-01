@@ -50,4 +50,14 @@ static void verifyExpectedBit(uint32_t bitCompound, uint32_t bitToCheck, int32_t
 	parse_validate(good, lineN, problem, index);
 }
 
+static string extractFilename(string path) {
+	string::size_type found = path.find_last_of("/");
+	return path.substr(found+1);
+}
+
+static string extractDirectory(string path) {
+	string::size_type found = path.find_last_of("/");
+	return path.substr(0, found+1);
+}
+
 #endif

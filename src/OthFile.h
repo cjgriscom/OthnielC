@@ -16,6 +16,8 @@ public:
 	vector<string> imports;
 	vector<pair<string,string>> aliases;
 
+	vector<OthFile> imports_resolved;
+
 	vector<string> variables;
 	vector<string> variable_types;
 	vector<string> variable_defaults; // No default should be set to "". A default value for an input indicates optional.
