@@ -28,9 +28,9 @@ void parseAndResolveDependencies(
 		vector<OthFile> &loadedFileList,
 		vector<string> &loadedFileNameList,
 		string currentPath) {
-	if (find(loadedFileNameList.begin(), loadedFileNameList.end(), filename) != loadedFileNameList.end()) {
+	if (find(loadedFileNameList.begin(), loadedFileNameList.end(), currentPath + filename) != loadedFileNameList.end()) {
 		// File already exists
-		cout << "File exists: " << filename << endl;
+		cout << "Already Loaded: " << filename << endl;
 		return;
 	} else {
 		cout << "Loading: " << filename << endl;
@@ -38,13 +38,17 @@ void parseAndResolveDependencies(
 		loadedFileList.push_back(file);
 		loadedFileNameList.push_back(currentPath + filename);
 
-		for (string importName : file.imports) {
+		vector<string> newImports = file.imports;
+		for (pair<string,string> aliasPair : file.aliases) {
+			newImports.push_back(aliasPair.first);
+		}
+		for (string importName : newImports) {
 			OthFile import;
 			importName = importName.substr(1, importName.size()-2);
 			string name = extractFilename(importName);
 			int colonPos = name.find_last_of(":");
 			if (colonPos != name.npos) name = name.substr(0, colonPos);
-			parseAndResolveDependencies(import, extractFilename(importName) + ".othsrc", loadedFileList, loadedFileNameList, currentPath + extractDirectory(importName));
+			parseAndResolveDependencies(import, name + ".othsrc", loadedFileList, loadedFileNameList, currentPath + extractDirectory(importName));
 			file.imports_resolved.push_back(import);
 		}
 	}
