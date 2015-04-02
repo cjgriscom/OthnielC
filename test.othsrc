@@ -17,7 +17,7 @@ instantiated sequence test[] <arbitraryThing:I32=0>
 	["4th pass:"]PRINT ["4th message"]shiftRegister[>]PRINTLN
 	["5th pass:"]PRINT [?]shiftRegister[>]PRINTLN
 	
-	[TRUE]:[someBoolean]
+	[true]:[someBoolean]
 	[12]:[a]
 	
 	EXECUTE{[a]++[a]:[>] ["EXECUTE: ", <, " is the new value of a"]PRINTLN}
@@ -34,29 +34,29 @@ instantiated sequence test[] <arbitraryThing:I32=0>
 	#PIPEEXISTS{a}[>] [<, "exists!", "does not exist."]?:[>] ["a ", <]PRINTLN
 	#PIPEEXISTS{hiddenVar}[>] [<, "exists!", "does not exist."]?:[>] ["hiddenVar ", <]PRINTLN
 	
-	//if{ [a,11]>=[con1] [a,12]<=[con2] [con1, con2]AND[>], < }: // {optional:statements, boolean}
-	//	[TRUE]:[result]
-	//:elseif{someBoolean}:
-	//	[FALSE]:[result]
+	//if{ [a,11]>=[con1] [a,12]<=[con2] [con1, con2]AND[r]}: // {statements}
+	//	[true]:[result]
+	//:[someBoolean]elseif:
+	//	[false]:[result]
 	//:end[result]	//'if' is a compound block; anything piped out through end[] must be defined in each part of the block
 	
 	//[result]PRINTLN
 	
-	//select{ a }:
+	//[a]select:
 	//	case
-	//:END
+	//:end
 	
-	BLOCK:
+	sequence:
 		[42]:[theAnswer]	
-	:END[theAnswer]
+	:end[theAnswer]
 	[theAnswer]PRINTLN
 	
-	[TRUE, 50]var0[^] [FALSE, ?]var0[>]PRINTLN
-	[TRUE, 51]var1[^] [FALSE, 0]var1[>]PRINTLN
-	[TRUE, 52]var2[^] [FALSE, 0]var2[>]PRINTLN
-	[TRUE, 53]var3[^] [FALSE, 0]var3[>]PRINTLN
-	[TRUE, 54]var4[^] [TRUE, 54.5]var4Double[^] [FALSE, 0]var4[out1] [FALSE, 0]var4Double[>] [out1, ", ", <]PRINTLN
-	[TRUE, 55]var5[^] [FALSE, 0]var5[>]PRINTLN
+	[true, 50]var0[^] [false, ?]var0[>]PRINTLN
+	[true, 51]var1[^] [false, 0]var1[>]PRINTLN
+	[true, 52]var2[^] [false, 0]var2[>]PRINTLN
+	[true, 53]var3[^] [false, 0]var3[>]PRINTLN
+	[true, 54]var4[^] [true, 54.5]var4Double[^] [false, 0]var4[out1] [false, 0]var4Double[>] [out1, ", ", <]PRINTLN
+	[true, 55]var5[^] [false, 0]var5[>]PRINTLN
 
 	getDefault[>] ["Default: ", <]PRINTLN
 	
@@ -120,8 +120,8 @@ instantiated sequence [a:Anything, b:typeof a]SWAP[newA:typeof a, newB:typeof a]
 	[a]:[newB] [b]:[newA]
 
 static sequence [input:String="defaultValue"]shiftRegister[result:String="emptyRegister"]
-	[FALSE, ""]regHelper[result]
-	[TRUE, input]regHelper[^]
+	[false, ""]regHelper[result]
+	[true, input]regHelper[^]
 	
 static sequence [write:Bool, value:String]regHelper[glob:String] [write, value]var1[glob]
 	

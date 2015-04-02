@@ -1,8 +1,8 @@
 import{"test_methods:var1"}
 
 static sequence [input:String="defaultValue"]stringRegister[result:String="emptyRegister"]
-	[FALSE, ""]regHelper[result]
-	[TRUE, input]regHelper[^]
+	[false, ""]regHelper[result]
+	[true, input]regHelper[^]
 	
 static sequence [write:Bool, value:String]stringRegHelper[glob:String] [write, value]var1[glob]
 	
