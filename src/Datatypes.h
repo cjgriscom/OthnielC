@@ -1,11 +1,11 @@
 #ifndef DATATYPES_H_
 #define DATATYPES_H_
 
-using namespace std;
+#include<OthUtil.h>
 
 //Datatypes
-const uint8_t U8  = 0x00;
-const uint8_t I8  = 0x01;
+const uint8_t U8 = 0x00;
+const uint8_t I8 = 0x01;
 const uint8_t U16 = 0x02;
 const uint8_t I16 = 0x03;
 const uint8_t U32 = 0x04;
@@ -17,18 +17,59 @@ const uint8_t F32 = 0x08; // Float
 const uint8_t F64 = 0x09; // Double
 const uint8_t F80 = 0x0A; // Long double
 
-const uint8_t C32 = 0x0C; // Complex
-const uint8_t C64 = 0x0D;
-const uint8_t C80 = 0x0E;
+const uint8_t BOOL = 0x10;
+const uint8_t STRING = 0x11;
 
-const uint8_t BOOL     = 0x10;
-const uint8_t STRING   = 0x11;
-
-const uint8_t REFERENCE= 0xF0; //TODO not totally sure how this works
+const uint8_t ARRAY = 0x70;
+const uint8_t CLUSTER = 0x71;
 
 // Abstract types
 const uint8_t INTEGER  = 0xFD;
 const uint8_t NUMERIC  = 0xFE;
 const uint8_t ANYTHING = 0xFF;
 
-#endif
+class AbstractDatatype {
+public:
+	uint8_t typeConstant = 0;
+
+	AbstractDatatype(uint8_t typeConstant) {
+		this->typeConstant = typeConstant;
+	}
+	bool isAbstract() {return true;}
+	bool isSimpleType() {return true;}
+};
+
+class Datatype : public AbstractDatatype {
+public:
+	Datatype(uint8_t typeConstant) : AbstractDatatype(typeConstant) {}
+	bool isAbstract() {return false;}
+};
+
+class ArrayType : public Datatype {
+	Datatype baseType;
+	int dimensions;
+	ArrayType(Datatype baseType, int dimensions) : Datatype(ARRAY) {
+		this->baseType = baseType;
+		this->dimensions = dimensions;
+	}
+	bool isAbstract() {return baseType.isAbstract();}
+	bool isSimpleType() {return false;}
+};
+
+class ClusterType : public Datatype {
+	Datatype types[];
+	int nTypes = 0;
+	ClusterType(int nTypes, Datatype baseTypes...) : Datatype(CLUSTER) {
+		this->types = baseTypes;
+		this->nTypes = nTypes;
+	}
+	bool isAbstract() {
+		for (int i = 0; i < nTypes; i++) {
+			if (types[i].isAbstract()) return true;
+		}
+		return false;
+	}
+	bool isSimpleType() {return false;}
+};
+
+#endif /* DATATYPES_H_ */
