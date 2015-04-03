@@ -19,6 +19,7 @@ const uint8_t F80 = 0x0A; // Long double
 
 const uint8_t BOOL = 0x10;
 const uint8_t STRING = 0x11;
+const uint8_t CHAR = 0x11;
 
 const uint8_t ARRAY = 0x70;
 const uint8_t CLUSTER = 0x71;
