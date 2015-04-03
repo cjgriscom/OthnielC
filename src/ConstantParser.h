@@ -22,14 +22,14 @@ static bool isConstant(string exp) {
 static Datatype getConstantType(string exp, int lineN) {
 	if (exp=="true" || exp=="false") {
 		return Datatype(BOOL);
-	} else if (exp[0] == "\"" && exp[exp.size()-1] == "\"") {
+	} else if (exp[0] == '\"' && exp[exp.size()-1] == '\"') {
 		return Datatype(STRING);
-	} else if (exp[0] == "'" && exp[exp.size()-1] == "'") {
+	} else if (exp[0] == '\'' && exp[exp.size()-1] == '\'') {
 		return Datatype(CHAR);
 	} else if (isdigit(exp[0])) { // Starts with a number
 		int dotCount = 0;
 		for (char c : exp) { // Validate number and count the number of dots.
-			if (c == ".") {dotCount++; continue;}
+			if (c == '.') {dotCount++; continue;}
 			parse_validate(isdigit(c), lineN, "Expression " + exp + " could not be evaluated as a numeric constant");
 		}
 		parse_validate(dotCount <= 1, lineN, "Invalid floating-point expression: "+exp);
@@ -38,7 +38,7 @@ static Datatype getConstantType(string exp, int lineN) {
 		} else {
 			return Datatype(I32); // I32 is the default integer type
 		}
-	} else if (exp[0] == "{" || exp[0] == "(") {
+	} else if (exp[0] == '{' || exp[0] == '(') {
 		parse_validate(false, lineN, "Arrays/clusters not yet implemented!!"); //TODO implement clusters/arrays
 	}
 

@@ -21,6 +21,7 @@ public:
 	vector<string> variables;
 	vector<string> variable_types;
 	vector<string> variable_defaults; // No default should be set to "". A default value for an input indicates optional.
+	vector<uint32_t> variable_lines;
 
 	vector<Function> functionList;
 };

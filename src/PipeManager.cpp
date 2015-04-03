@@ -10,6 +10,7 @@
 #include <Function.h>
 #include <ParsedCall.h>
 #include <sstream> // for to_string
+#include <ConstantParser.h>
 
 using namespace std;
 
@@ -47,9 +48,65 @@ static int replaceForwardingCharacters(vector<ParsedCall> &calls, int startID) {
 	return replacementID;
 }
 
-static void setPipeCodes(OthFile &file) {
+static bool isValidName(string &name) {
+	if (name.empty()) return false;
+	if (!isalpha(name[0])) return false; // Must start with letter
+	for (char c : name) {
+		if (c != '_' && !isdigit(c) && !isalpha(c)) return false; // numbers, letters, and underscores are allowed
+	}
+	return true;
+}
+
+static void validatePipeName(string &pipeName, int lineN) {
+	if (pipeName == ">" || pipeName == "<" || pipeName == "?" || pipeName == "^") return;
+	if (isConstant(pipeName)) {
+		getConstantType(pipeName, lineN);
+		return;
+	}
+	parse_validate(isValidName(pipeName), lineN, "Invalid pipe name: " + pipeName);
+}
+static void validateFunctionName(string &funcName, int lineN, bool inConfNodes) {
+	if (inConfNodes) {
+		if (isConstant(funcName)) {
+			getConstantType(funcName, lineN);
+			return;
+		} /*else if (isDatatype(funcName)) {
+			getDatatype(funcName, lineN);
+			return;
+		}*/ //TODO Enable datatype checks
+	}
+	parse_validate(isValidName(funcName), lineN, "Invalid function name: " + funcName);
+}
+
+static void validateCallList(vector<ParsedCall> &calls, bool inConfNodes) {
+	for (ParsedCall &call : calls) {
+		if (inConfNodes && isConstant(call.callName)) continue; // If a constant is encountered within a confNode list, skip
+
+		for (string &pipe : call.inParams) {validatePipeName(pipe, call.lineN);}
+		for (string &pipe : call.outParams) {validatePipeName(pipe, call.lineN);}
+		for (vector<ParsedCall> &callList : call.confNodes) validateCallList(callList, true);
+	}
+}
+
+static void validatePipeAndFunctionNames(OthFile &file) {
 	//TODO first validate pipe names (so that we can start inserting illegal names like < replacements)
 	//		i.e. _ as first character is illegal
+	for (int i = 0; i < file.variables.size(); i++) { // Validate local/global variable names
+		validatePipeName(file.variables[i], file.variable_lines[i]);
+	}
+	for (Function &f : file.functionList) { // Validate names in function headers
+		validateFunctionName(f.functionName, f.lineN, false);
+		for (string pipe : f.variables) {
+			validatePipeName(pipe, f.lineN);
+		}
+		for (string &confNode : f.confNodes) {
+			validatePipeName(confNode, f.lineN);
+		}
+		validateCallList(f.callList, false);
+	}
+}
+
+static void replaceForwardingChars(OthFile &file) {
 	for (Function &f : file.functionList) {
 		replaceForwardingCharacters(f.callList, 0);
 	}

@@ -6,7 +6,7 @@ variable <global1:String="content">
 
 instantiated sequence test[] <arbitraryThing:I32=0>
 	
-    [3]dim{I32(1)}[pizzaToppings]                               // Create a String array of 3 elements
+    //[3]dim{I32(1)}[pizzaToppings]                               // Create a String array of 3 elements
 	[pizzaToppings, 0,"pepperoni", 1,"sausage", 2,"shrooms"]set // sets indices 0-2
 	[pizzaToppings]length[len] [len, " Toppings: "]PRINT        // Prints “3 Toppings: ”
 	[pizzaToppings,0,1,2]index[>,>,>] [<, " ", <, " ", <]PRINT  // Prints “pepperoni sausage shrooms”

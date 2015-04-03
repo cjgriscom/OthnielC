@@ -167,6 +167,7 @@ static void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 					file.variables.push_back(label);
 					file.variable_types.push_back(datatypeS);
 					file.variable_defaults.push_back(defaultValue);
+					file.variable_lines.push_back(call.lineN);
 
 				} break;
 				case ALIAS: {

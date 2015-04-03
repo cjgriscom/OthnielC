@@ -20,7 +20,8 @@ void parseFile(OthFile &container, string fileName) {
 
 	container.path = fileName;
 	assembleFile(container, finalCalls);
-	setPipeCodes(container);
+	validatePipeAndFunctionNames(container);
+	replaceForwardingChars(container);
 }
 
 void parseAndResolveDependencies(
@@ -60,5 +61,10 @@ int main(int argc, char **argv) {
 
 	OthFile main;
 	parseAndResolveDependencies(main, "test.othsrc", loadedFileList, loadedFileNameList, "/");
-	testFB(&main);
+
+	for (OthFile file : loadedFileList) {
+		cout << endl << "FILE: " << file.path << endl;
+		testFB(&file);
+	}
+
 }
