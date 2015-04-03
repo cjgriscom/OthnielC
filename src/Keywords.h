@@ -12,9 +12,7 @@ const uint8_t ALIAS        = 0x02;
 #define directive_kw(code) (code==VARIABLE ? "variable" : (code==IMPORT ? "import" : "alias"))
 #define directive_ID(str)  (str=="variable" ? VARIABLE : (str=="import" ? IMPORT : (str=="alias" ? ALIAS : INVALID) ) )
 
-static bool is_directive_kw(string s) {
-	return directive_ID(s) != INVALID;
-}
+#define is_directive_kw(s) (directive_ID(s) != INVALID)
 
 //runMode
 const uint8_t SEQUENCE     = 0x00;
@@ -32,8 +30,6 @@ const uint8_t SIMPLE       = 0x03;
 #define mm_kw(code) (code==STATIC ? "static" : (code==INLINE ? "inline" : (code==SIMPLE ? "simple" : "instantiated")) )
 #define mm_ID(str)  (str=="static" ? STATIC : (str=="inline" ? INLINE : (str=="instantiated" ? INSTANTIATED : (str=="simple" ? SIMPLE : INVALID) ) ) )
 
-static bool is_function_kw(string s) {
-	return rm_ID(s) != INVALID || mm_ID(s) != INVALID;
-}
+#define is_function_kw(s) (rm_ID(s) != INVALID || mm_ID(s) != INVALID)
 
 #endif

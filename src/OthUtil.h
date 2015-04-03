@@ -32,21 +32,21 @@ inline string trim_end(string s) {
 			s.substr(start, len - start) : s;
 }
 
-static void parse_validate(bool condition, int32_t lineN, string problem) {
+inline void parse_validate(bool condition, int32_t lineN, string problem) {
 	if (!condition) {
 		cout << "Parsing Error: " << problem << " at line " << lineN;
 		exit(1);
 	}
 }
 
-static void parse_validate(bool condition, int32_t lineN, string problem, int32_t supplimentaryIndex) {
+inline void parse_validate(bool condition, int32_t lineN, string problem, int32_t supplimentaryIndex) {
 	if (!condition) {
 		cout << "Parsing Error: " << problem << " " << supplimentaryIndex << " at line " << lineN;
 		exit(1);
 	}
 }
 
-static uint32_t binlog(uint32_t bits) {
+inline uint32_t binlog(uint32_t bits) {
 	int log = 0;
 	if( ( bits & 0xffff0000 ) != 0 ) {bits >>= 16; log = 16;}
 	if( bits >= 256 ) {bits >>= 8; log += 8;}
@@ -55,17 +55,17 @@ static uint32_t binlog(uint32_t bits) {
 	return log + ( bits >> 1 );
 }
 
-static void verifyExpectedBit(uint32_t bitCompound, uint32_t bitToCheck, int32_t lineN, string problem, int32_t index) {
+inline void verifyExpectedBit(uint32_t bitCompound, uint32_t bitToCheck, int32_t lineN, string problem, int32_t index) {
 	bool good = ((bitCompound>>binlog(bitToCheck)) & 1) != 0; // Check if bit is set
 	parse_validate(good, lineN, problem, index);
 }
 
-static string extractFilename(string path) {
+inline string extractFilename(string path) {
 	string::size_type found = path.find_last_of("/");
 	return path.substr(found+1);
 }
 
-static string extractDirectory(string path) {
+inline string extractDirectory(string path) {
 	string::size_type found = path.find_last_of("/");
 	return path.substr(0, found+1);
 }

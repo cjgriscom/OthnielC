@@ -47,7 +47,7 @@ void parseAndResolveDependencies(
 			OthFile import;
 			importName = importName.substr(1, importName.size()-2);
 			string name = extractFilename(importName);
-			int colonPos = name.find_last_of(":");
+			string::size_type colonPos = name.find_last_of(":");
 			if (colonPos != name.npos) name = name.substr(0, colonPos);
 			parseAndResolveDependencies(import, name + ".othsrc", loadedFileList, loadedFileNameList, currentPath + extractDirectory(importName));
 			file.imports_resolved.push_back(import);
@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 
 	for (OthFile file : loadedFileList) {
 		cout << endl << "FILE: " << file.path << endl;
-		testFB(&file);
+		testFB(file);
 	}
 
 }

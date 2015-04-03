@@ -56,7 +56,7 @@ public:
 	}
 
 	int32_t indexOf(string seq) {
-		int32_t pos = contents.find(seq);
+		string::size_type pos = contents.find(seq);
 		return pos == seq.npos ? -1 : pos;
 	}
 
@@ -103,14 +103,10 @@ static Component getSpace(uint32_t beginIndex, uint32_t lineN) {
 static vector<Component> separateComponents(bool permitConstants); // Declare for recursive use
 
 static void addLine(int32_t lineN, string line) {
-	int32_t commentStart = line.find("//");
+	string::size_type commentStart = line.find("//");
 	if (commentStart != line.npos) line = line.substr(0, commentStart); // Strip comments from line
 	if (trim(line) == "") return;
 	lines.addLine(lineN, line);
-}
-
-static ParsedCall get(uint32_t index) {
-	return finalCalls[index];
 }
 
 static vector<string> adjoinedInsFromOuts(vector<string> outs) {
@@ -435,7 +431,7 @@ static vector<Component> separateComponents(bool permitConstants) {
 	return components;
 }
 
-static void parse() {
+inline void parse() {
 	//Initiate
 	lines.begin_parse();
 
@@ -495,7 +491,7 @@ static void printCalls(vector<ParsedCall> *calls, char delim) {
 	}
 }
 
-static void test() {
+inline void test() {
 	printCalls(&finalCalls, '\n');
 }
 

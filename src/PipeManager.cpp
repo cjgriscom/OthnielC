@@ -19,7 +19,7 @@ static int replaceForwardingCharactersAndBooleans(vector<ParsedCall> &calls, int
 	int replacementID = startID;
 	ParsedCall call;
 	int lastForwardIndex = 0;
-	for (int callN = 0; callN < calls.size(); callN++) {
+	for (unsigned int callN = 0; callN < calls.size(); callN++) {
 		call = calls[callN];
 		for (string &param : call.inParams) {
 			parse_validate(param != ">", call.lineN, "Encountered > pipe in inputs");
@@ -92,10 +92,8 @@ static void validateCallList(vector<ParsedCall> &calls, bool inConfNodes) {
 	}
 }
 
-static void validatePipeAndFunctionNames(OthFile &file) {
-	//TODO first validate pipe names (so that we can start inserting illegal names like < replacements)
-	//		i.e. _ as first character is illegal
-	for (int i = 0; i < file.variables.size(); i++) { // Validate local/global variable names
+inline void validatePipeAndFunctionNames(OthFile &file) {
+	for (unsigned int i = 0; i < file.variables.size(); i++) { // Validate local/global variable names
 		validatePipeName(file.variables[i], file.variable_lines[i]);
 	}
 	for (Function &f : file.functionList) { // Validate names in function headers
@@ -110,7 +108,7 @@ static void validatePipeAndFunctionNames(OthFile &file) {
 	}
 }
 
-static void replaceForwardingCharsAndBooleans(OthFile &file) {
+inline void replaceForwardingCharsAndBooleans(OthFile &file) {
 	for (Function &f : file.functionList) {
 		replaceForwardingCharactersAndBooleans(f.callList, 0);
 	}

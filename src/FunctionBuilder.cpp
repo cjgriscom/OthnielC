@@ -33,7 +33,7 @@ static void parseDeclaration(ParsedCall *callRef) {
 
 		string nodeExp = confNode[0].callName;
 
-		int16_t colonPos = nodeExp.find(':');
+		string::size_type colonPos = nodeExp.find(':');
 		parse_validate(colonPos != nodeExp.npos, call.lineN, "Expected (label):(configuration node type)");
 
 		f.confNodes.push_back(trim(nodeExp.substr(0, colonPos)));
@@ -47,14 +47,14 @@ static void parseDeclaration(ParsedCall *callRef) {
 				call.auxVars[i-f.nInputs-f.nOutputs]);
 
 		//Syntax:  pipeName:I32 = 123
-		int16_t colonPos = exp.find(':');
+		string::size_type colonPos = exp.find(':');
 		parse_validate(colonPos != exp.npos, call.lineN, "Expected (label):(type)");
 
 		string label = trim(exp.substr(0, colonPos));
 		string datatypeS = trim(exp.substr(colonPos+1));
 		string defaultValue = ""; // No default
 
-		int16_t equalPos = datatypeS.find('=');
+		string::size_type equalPos = datatypeS.find('=');
 
 		if (equalPos != datatypeS.npos) { // If we found an equals expression
 			defaultValue = trim(datatypeS.substr(equalPos + 1)); // Separate default value
@@ -115,7 +115,7 @@ static void validateBlocks(Function &function) {
 	parse_validate(nesting_depth == 0, latestCall.lineN, "Hanging block opening at the end of function " + function.functionName);
 }
 
-static void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
+inline void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 	bool inFunction = false;
 
 	for (uint32_t i = 0; i < calls.size(); i++) {
@@ -150,14 +150,14 @@ static void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 
 					string exp = call.auxVars[0];
 
-					int16_t colonPos = exp.find(':');
+					string::size_type colonPos = exp.find(':');
 					parse_validate(colonPos != exp.npos, call.lineN, "Expected <name:type> expression as variable declaration");
 
 					string label = trim(exp.substr(0, colonPos));
 					string datatypeS = trim(exp.substr(colonPos+1));
 					string defaultValue = ""; // No default
 
-					int16_t equalPos = datatypeS.find('=');
+					string::size_type equalPos = datatypeS.find('=');
 
 					if (equalPos != datatypeS.npos) { // If we found an equals expression
 						defaultValue = trim(datatypeS.substr(equalPos + 1)); // Separate default value
@@ -286,7 +286,7 @@ static void printDeclaration(Function * fnctnRef) {
 	cout << fn.functionName;
 	if (fn.confNodes.size() > 0) {
 		cout << "{";
-		for (int i = 0; i < fn.confNodes.size(); i++) {
+		for (unsigned int i = 0; i < fn.confNodes.size(); i++) {
 			cout << fn.confNodes[i] << ":" << fn.confNode_types[i];
 			if (i < fn.confNodes.size()-1) cout << ", ";
 		}
@@ -294,34 +294,34 @@ static void printDeclaration(Function * fnctnRef) {
 	}
 }
 
-static void testFB(OthFile * file) {
-	for (int i = 0; i < (*file).variables.size(); i++) {
-		cout << "variable <" << (*file).variables[i] << ":" << (*file).variable_types[i];
-		if ((*file).variable_defaults[i].size() > 0) {
-			cout << "=" << (*file).variable_defaults[i] << ">" << endl;
+inline void testFB(OthFile &file) {
+	for (unsigned int i = 0; i < file.variables.size(); i++) {
+		cout << "variable <" << file.variables[i] << ":" << file.variable_types[i];
+		if (file.variable_defaults[i].size() > 0) {
+			cout << "=" << file.variable_defaults[i] << ">" << endl;
 		} else {
 			cout << ">" << endl;
 		}
 	}
 	cout << endl;
-	for (int i = 0; i < (*file).aliases.size(); i++) {
-		cout << "alias{" << (*file).aliases[i].first << ", " << (*file).aliases[i].second << "}" << endl;
+	for (unsigned int i = 0; i < file.aliases.size(); i++) {
+		cout << "alias{" << file.aliases[i].first << ", " << file.aliases[i].second << "}" << endl;
 	}
-	for (int i = 0; i < (*file).imports.size(); i++) {
-		cout << "import{" << (*file).imports[i] << "}" << endl;
+	for (unsigned int i = 0; i < file.imports.size(); i++) {
+		cout << "import{" << file.imports[i] << "}" << endl;
 	}
 	cout << endl;
-	for (Function fn : (*file).functionList) {
+	for (Function fn : file.functionList) {
 		bool hasAux = false;
 		cout << mm_kw(fn.memoryMode) << " " << rm_kw(fn.runMode) << " ";
 		if (fn.variables.size() == 0) printDeclaration(&fn);
-		for (int i = 0; i < fn.variables.size(); i++) {
+		for (int i = 0; i < ((int)fn.variables.size()); i++) {
 			if (fn.nInputs == 0) printDeclaration(&fn);
 			if ((i == 0 && fn.nInputs > 0) || (i == fn.nInputs && fn.nOutputs > 0)) cout << "[";
 			if (i == fn.nInputs+fn.nOutputs) {cout << " <"; hasAux=true;}
 			cout << fn.variables[i] << ":" << fn.variable_types[i];
 			if (fn.variable_defaults[i].size() > 0) cout << "=" << fn.variable_defaults[i];
-			bool printAuxBracket = i == fn.variables.size()-1 && hasAux;
+			bool printAuxBracket = i == ((int)fn.variables.size())-1 && hasAux;
 			if (i == fn.nInputs-1 || i == fn.nInputs+fn.nOutputs-1) cout << "]";
 			else if (!printAuxBracket) cout << ", ";
 			if (i == fn.nInputs-1) printDeclaration(&fn);
