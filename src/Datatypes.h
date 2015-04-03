@@ -49,21 +49,21 @@ public:
 class ArrayType : public Datatype {
 	Datatype baseType;
 	int dimensions;
-	ArrayType(Datatype baseType, int dimensions) : Datatype(ARRAY) {
-		this->baseType = baseType;
-		this->dimensions = dimensions;
-	}
+	ArrayType(Datatype &baseType, int dimensions) :
+			Datatype(ARRAY),
+			baseType(baseType),
+			dimensions(dimensions) {}
 	bool isAbstract() {return baseType.isAbstract();}
 	bool isSimpleType() {return false;}
 };
 
 class ClusterType : public Datatype {
-	Datatype types[];
+	Datatype * types;
 	int nTypes = 0;
-	ClusterType(int nTypes, Datatype baseTypes...) : Datatype(CLUSTER) {
-		this->types = baseTypes;
-		this->nTypes = nTypes;
-	}
+	ClusterType(int nTypes, Datatype baseTypes[]) :
+			Datatype(CLUSTER),
+			types(baseTypes),
+			nTypes(nTypes) {}
 	bool isAbstract() {
 		for (int i = 0; i < nTypes; i++) {
 			if (types[i].isAbstract()) return true;
