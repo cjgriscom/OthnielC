@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <OthUtil.h>
+#include <Datatypes.h>
 #include <Keywords.h>
 #include <ParsedCall.h>
 
@@ -25,7 +26,7 @@ public:
 	 * the rest are auxiliary variables
 	 */
 	vector<string> variables;
-	vector<string> variable_types;
+	vector<Datatype> variable_types;
 	vector<string> variable_defaults; // No default should be set to "". A default value for an input indicates optional.
 
 	vector<string> confNodes;

@@ -3,6 +3,7 @@
 import{"test_methods"}
 alias{"test_shiftregister:stringRegister", shiftRegister}
 variable <global1:String="content">
+constant <DEFAULT_REG:String="emptyRegister">
 
 instantiated sequence test[] <arbitraryThing:I32=0>
 	
@@ -119,7 +120,7 @@ static sequence [bool1:Bool,bool2:Bool]printBooleanOps
 instantiated sequence [a:Anything, b:typeof a]SWAP[newA:typeof a, newB:typeof a]
 	[a]:[newB] [b]:[newA]
 
-static sequence [input:String="defaultValue"]shiftRegister[result:String="emptyRegister"]
+static sequence [input:String="defaultValue"]shiftRegister[result:String=DEFAULT_REG] // Assign a constant as default
 	[false, ""]regHelper[result]
 	[true, input]regHelper[^]
 	

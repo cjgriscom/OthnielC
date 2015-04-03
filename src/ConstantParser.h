@@ -15,11 +15,12 @@ using namespace std;
 // Array:  {0,1,2} or {{0,1},{2,3}}
 // Cluster: (0, "", false)
 
-static bool isConstant(string exp) {
-	return !isalpha(exp[0]) || exp == "true" || exp == "false";
+inline bool isConstant(string exp) {
+	return exp != ">" && exp != "<" && exp != "?" && exp != "^" &&
+			(!(isalpha(exp[0]) || exp[0]=='_') || exp == "true" || exp == "false");
 }
 
-static Datatype getConstantType(string exp, int lineN) {
+inline Datatype getConstantType(string exp, int lineN) {
 	if (exp=="true" || exp=="false") {
 		return Datatype(BOOL);
 	} else if (exp[0] == '\"' && exp[exp.size()-1] == '\"') {

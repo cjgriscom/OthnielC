@@ -38,6 +38,9 @@ public:
 	}
 	bool isAbstract() {return true;}
 	bool isSimpleType() {return true;}
+	string asString() {
+		return "Abstract";
+	}
 };
 
 class Datatype : public AbstractDatatype {
@@ -72,5 +75,9 @@ class ClusterType : public Datatype {
 	}
 	bool isSimpleType() {return false;}
 };
+
+static inline Datatype evaluateDatatype(string expression, uint64_t lineN) {
+
+}
 
 #endif /* DATATYPES_H_ */

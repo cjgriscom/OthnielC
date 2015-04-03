@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string>
 #include <iostream>
+#include <sstream> // for to_string
 using namespace std;
 
 // Inspired by Java's trim function
@@ -68,6 +69,12 @@ inline string extractFilename(string path) {
 inline string extractDirectory(string path) {
 	string::size_type found = path.find_last_of("/");
 	return path.substr(0, found+1);
+}
+
+inline string getLocalIDExpression(string prefix, uint32_t ID, uint32_t lineN) {
+	std::stringstream ss;
+	ss << prefix << "_" << ID << "_" << lineN;
+	return ss.str();
 }
 
 #endif

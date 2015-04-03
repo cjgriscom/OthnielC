@@ -9,12 +9,11 @@
 #include <Keywords.h>
 #include <Function.h>
 #include <ParsedCall.h>
-#include <sstream> // for to_string
 #include <ConstantParser.h>
 
 using namespace std;
 
-static int replaceForwardingCharactersAndBooleans(vector<ParsedCall> &calls, int startID) { //TODO I think this might have an issue with blocks....
+static int replaceForwardingCharactersAndConstants(OthFile &file, vector<ParsedCall> &calls, int startID) { //TODO I think this might have an issue with blocks....
 	queue<string> forwardedPipes;
 	int replacementID = startID;
 	ParsedCall call;
@@ -27,24 +26,21 @@ static int replaceForwardingCharactersAndBooleans(vector<ParsedCall> &calls, int
 				parse_validate(!forwardedPipes.empty(), call.lineN, "Encountered < but no forwarded pipes exist!");
 				param = forwardedPipes.front();
 				forwardedPipes.pop();
-			} else if (param == "true" || param == "false") {
-				param = "_" + param;
+			} else if (isConstant(param)) {
+				param = file.getConstant(param, call.lineN);
 			}
 		}
 		for (string &param : call.outParams) {
 			parse_validate(param != "<", call.lineN, "Encountered < pipe in outputs");
 			if (param == ">") {
-				std::stringstream ss;
-				ss << "_fwd_" << replacementID++ << "_" << call.lineN;
-				param = ss.str();
-				forwardedPipes.push(ss.str());
+				param = getLocalIDExpression("_fwd", replacementID++, call.lineN);
+				forwardedPipes.push(param);
 				lastForwardIndex = call.lineN; //for error messages if needed
-			} else if (param == "true" || param == "false") {
-				param = "_" + param;
 			}
+			parse_validate(!isConstant(param), call.lineN, "Constants not allowed in output pipes: " + param);
 		}
 		for (vector<ParsedCall> &confNodes : call.confNodes) {
-			replacementID = replaceForwardingCharactersAndBooleans(confNodes, replacementID);
+			replacementID = replaceForwardingCharactersAndConstants(file, confNodes, replacementID);
 		}
 		calls[callN] = call;
 	}
@@ -95,6 +91,7 @@ static void validateCallList(vector<ParsedCall> &calls, bool inConfNodes) {
 inline void validatePipeAndFunctionNames(OthFile &file) {
 	for (unsigned int i = 0; i < file.variables.size(); i++) { // Validate local/global variable names
 		validatePipeName(file.variables[i], file.variable_lines[i]);
+		validatePipeName(file.constants[i], file.constant_lines[i]);
 	}
 	for (Function &f : file.functionList) { // Validate names in function headers
 		validateFunctionName(f.functionName, f.lineN, false);
@@ -108,9 +105,9 @@ inline void validatePipeAndFunctionNames(OthFile &file) {
 	}
 }
 
-inline void replaceForwardingCharsAndBooleans(OthFile &file) {
+inline void replaceForwardingCharsAndConstants(OthFile &file) {
 	for (Function &f : file.functionList) {
-		replaceForwardingCharactersAndBooleans(f.callList, 0);
+		replaceForwardingCharactersAndConstants(file, f.callList, 0);
 	}
 }
 

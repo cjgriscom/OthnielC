@@ -4,10 +4,12 @@
 #include <OthUtil.h>
 #include <OthFile.h>
 #include <Keywords.h>
+#include <Datatypes.h>
 #include <Function.h>
 #include <ParsedCall.h>
 #include <string>
 #include <vector>
+#include <iostream>
 using namespace std;
 
 static Function f;
@@ -62,7 +64,7 @@ static void parseDeclaration(ParsedCall *callRef) {
 		}
 
 		f.variables.push_back(label);
-		f.variable_types.push_back(datatypeS);
+		f.variable_types.push_back(evaluateDatatype(datatypeS, f.lineN));
 		f.variable_defaults.push_back(defaultValue);
 	}
 
@@ -135,7 +137,9 @@ inline void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 		} else if (qualifiesAsKeyword(call) && is_directive_kw(call.callName)) {
 			// Directives always take place outside of functions (as of now) so assume end of function
 			inFunction = false;
-			switch (directive_ID(call.callName)) {
+			uint8_t dir_ID = directive_ID(call.callName);
+			switch (dir_ID) {
+				case CONSTANT:
 				case VARIABLE: {
 					parse_validate(call.auxVars.size()==1,
 							call.lineN,
@@ -162,12 +166,21 @@ inline void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 					if (equalPos != datatypeS.npos) { // If we found an equals expression
 						defaultValue = trim(datatypeS.substr(equalPos + 1)); // Separate default value
 						datatypeS = trim(datatypeS.substr(0, equalPos)); // and datatype
+					} else {
+						parse_validate(dir_ID != CONSTANT, call.lineN, "Constant must declare a value");
 					}
 
-					file.variables.push_back(label);
-					file.variable_types.push_back(datatypeS);
-					file.variable_defaults.push_back(defaultValue);
-					file.variable_lines.push_back(call.lineN);
+					if (dir_ID == VARIABLE) {
+						file.variables.push_back(label);
+						file.variable_types.push_back(evaluateDatatype(datatypeS, call.lineN));
+						file.variable_defaults.push_back(defaultValue);
+						file.variable_lines.push_back(call.lineN);
+					} else {
+						file.constants.push_back(label);
+						file.constant_types.push_back(evaluateDatatype(datatypeS, call.lineN));
+						file.constant_values.push_back(defaultValue);
+						file.constant_lines.push_back(call.lineN);
+					}
 
 				} break;
 				case ALIAS: {
@@ -244,6 +257,20 @@ inline void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 	}
 }
 
+inline void validateAndReplaceDeclarationConstants(OthFile &file) {
+	for (unsigned int i = 0; i < file.variables.size(); i++) {
+		if (file.variable_defaults[i] == "") continue;
+		if (isConstant(file.variable_defaults[i])) {
+			file.variable_defaults[i] = file.getConstant(file.variable_defaults[i], file.variable_lines[i]);
+		} else { // Not a constant; must be a reference to a constant
+			for (string name : file.constants) {
+				if (name == file.variable_defaults[i]) continue;
+			}
+			parse_validate(false, file.variable_lines[i], "Could not resolve default value expression");
+		}
+	}
+}
+
 static void printCallsFB(int indent, vector<ParsedCall> *calls, char delim) {
 	for (ParsedCall call : *calls) {
 		if (call.isBlockEnd) {
@@ -296,9 +323,18 @@ static void printDeclaration(Function * fnctnRef) {
 
 inline void testFB(OthFile &file) {
 	for (unsigned int i = 0; i < file.variables.size(); i++) {
-		cout << "variable <" << file.variables[i] << ":" << file.variable_types[i];
+		cout << "variable <" << file.variables[i] << ":" << file.variable_types[i].asString();
 		if (file.variable_defaults[i].size() > 0) {
 			cout << "=" << file.variable_defaults[i] << ">" << endl;
+		} else {
+			cout << ">" << endl;
+		}
+	}
+	cout << endl;
+	for (unsigned int i = 0; i < file.constants.size(); i++) {
+		cout << "constant <" << file.constants[i] << ":" << file.constant_types[i].asString();
+		if (file.constant_values[i].size() > 0) {
+			cout << "=" << file.constant_values[i] << ">" << endl;
 		} else {
 			cout << ">" << endl;
 		}
@@ -319,7 +355,7 @@ inline void testFB(OthFile &file) {
 			if (fn.nInputs == 0) printDeclaration(&fn);
 			if ((i == 0 && fn.nInputs > 0) || (i == fn.nInputs && fn.nOutputs > 0)) cout << "[";
 			if (i == fn.nInputs+fn.nOutputs) {cout << " <"; hasAux=true;}
-			cout << fn.variables[i] << ":" << fn.variable_types[i];
+			cout << fn.variables[i] << ":" << fn.variable_types[i].asString();
 			if (fn.variable_defaults[i].size() > 0) cout << "=" << fn.variable_defaults[i];
 			bool printAuxBracket = i == ((int)fn.variables.size())-1 && hasAux;
 			if (i == fn.nInputs-1 || i == fn.nInputs+fn.nOutputs-1) cout << "]";

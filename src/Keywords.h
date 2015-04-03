@@ -8,9 +8,10 @@ const uint8_t INVALID      = 0xFF;
 const uint8_t VARIABLE     = 0x00;
 const uint8_t IMPORT       = 0x01;
 const uint8_t ALIAS        = 0x02;
+const uint8_t CONSTANT     = 0x03;
 
-#define directive_kw(code) (code==VARIABLE ? "variable" : (code==IMPORT ? "import" : "alias"))
-#define directive_ID(str)  (str=="variable" ? VARIABLE : (str=="import" ? IMPORT : (str=="alias" ? ALIAS : INVALID) ) )
+#define directive_kw(code) (code==VARIABLE ? "variable" : (code==IMPORT ? "import" : (code==ALIAS ? "alias" : "constant")))
+#define directive_ID(str)  (str=="variable" ? VARIABLE : (str=="import" ? IMPORT : (str=="alias" ? ALIAS : (str=="constant" ? CONSTANT : INVALID) ) ) )
 
 #define is_directive_kw(s) (directive_ID(s) != INVALID)
 

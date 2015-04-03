@@ -20,8 +20,9 @@ void parseFile(OthFile &container, string fileName) {
 
 	container.path = fileName;
 	assembleFile(container, finalCalls);
+	validateAndReplaceDeclarationConstants(container);
 	validatePipeAndFunctionNames(container);
-	replaceForwardingCharsAndBooleans(container);
+	replaceForwardingCharsAndConstants(container);
 }
 
 void parseAndResolveDependencies(
