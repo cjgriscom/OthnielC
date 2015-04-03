@@ -14,7 +14,7 @@
 
 using namespace std;
 
-static int replaceForwardingCharacters(vector<ParsedCall> &calls, int startID) { //TODO I think this might have an issue with blocks....
+static int replaceForwardingCharactersAndBooleans(vector<ParsedCall> &calls, int startID) { //TODO I think this might have an issue with blocks....
 	queue<string> forwardedPipes;
 	int replacementID = startID;
 	ParsedCall call;
@@ -27,6 +27,8 @@ static int replaceForwardingCharacters(vector<ParsedCall> &calls, int startID) {
 				parse_validate(!forwardedPipes.empty(), call.lineN, "Encountered < but no forwarded pipes exist!");
 				param = forwardedPipes.front();
 				forwardedPipes.pop();
+			} else if (param == "true" || param == "false") {
+				param = "_" + param;
 			}
 		}
 		for (string &param : call.outParams) {
@@ -37,10 +39,12 @@ static int replaceForwardingCharacters(vector<ParsedCall> &calls, int startID) {
 				param = ss.str();
 				forwardedPipes.push(ss.str());
 				lastForwardIndex = call.lineN; //for error messages if needed
+			} else if (param == "true" || param == "false") {
+				param = "_" + param;
 			}
 		}
 		for (vector<ParsedCall> &confNodes : call.confNodes) {
-			replacementID = replaceForwardingCharacters(confNodes, replacementID);
+			replacementID = replaceForwardingCharactersAndBooleans(confNodes, replacementID);
 		}
 		calls[callN] = call;
 	}
@@ -106,9 +110,9 @@ static void validatePipeAndFunctionNames(OthFile &file) {
 	}
 }
 
-static void replaceForwardingChars(OthFile &file) {
+static void replaceForwardingCharsAndBooleans(OthFile &file) {
 	for (Function &f : file.functionList) {
-		replaceForwardingCharacters(f.callList, 0);
+		replaceForwardingCharactersAndBooleans(f.callList, 0);
 	}
 }
 

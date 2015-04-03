@@ -21,7 +21,7 @@ void parseFile(OthFile &container, string fileName) {
 	container.path = fileName;
 	assembleFile(container, finalCalls);
 	validatePipeAndFunctionNames(container);
-	replaceForwardingChars(container);
+	replaceForwardingCharsAndBooleans(container);
 }
 
 void parseAndResolveDependencies(
