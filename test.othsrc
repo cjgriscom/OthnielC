@@ -2,12 +2,12 @@
 
 import{"test_methods"}
 alias{"test_shiftregister:stringRegister", shiftRegister}
-variable <global1:String="content">
-constant <DEFAULT_REG:String="emptyRegister">
+variable <global1:string="content">
+constant <DEFAULT_REG:string="emptyRegister">
 
 instantiated sequence test[] <arbitraryThing:I32=0>
 	
-    //[3]dim{I32(1)}[pizzaToppings]                               // Create a String array of 3 elements
+    //[3]dim{I32(1)}[pizzaToppings]                               // Create a string array of 3 elements
 	[pizzaToppings, 0,"pepperoni", 1,"sausage", 2,"shrooms"]set // sets indices 0-2
 	[pizzaToppings]length[len] [len, " Toppings: "]PRINT        // Prints “3 Toppings: ”
 	[pizzaToppings,0,1,2]index[>,>,>] [<, " ", <, " ", <]PRINT  // Prints “pepperoni sausage shrooms”
@@ -27,7 +27,7 @@ instantiated sequence test[] <arbitraryThing:I32=0>
 	
 	EXECUTE{
 		["Enter value for hidden var: "]PRINT
-		INPUT{String}[hiddenVar]
+		INPUT{string}[hiddenVar]
 		["234"]:[hiddenVar]
 		["Value of hidden var in execute scope is: ", hiddenVar]PRINTLN
 	}
@@ -120,10 +120,10 @@ static sequence [bool1:Bool,bool2:Bool]printBooleanOps
 instantiated sequence [a:Anything, b:typeof a]SWAP[newA:typeof a, newB:typeof a]
 	[a]:[newB] [b]:[newA]
 
-static sequence [input:String="defaultValue"]shiftRegister[result:String=DEFAULT_REG] // Assign a constant as default
+static sequence [input:string="defaultValue"]shiftRegister[result:string=DEFAULT_REG] // Assign a constant as default
 	[false, ""]regHelper[result]
 	[true, input]regHelper[^]
 	
-static sequence [write:Bool, value:String]regHelper[glob:String] [write, value]var1[glob]
+static sequence [write:Bool, value:string]regHelper[glob:string] [write, value]var1[glob]
 	
 	// 
