@@ -1,8 +1,8 @@
 #ifndef CONSTANTPARSER_H_
 #define CONSTANTPARSER_H_
 
-#include<string>
-#include<Datatypes.h>
+#include <string>
+#include <Datatypes.h>
 #include <ctype.h>
 
 using namespace std;
@@ -16,7 +16,7 @@ using namespace std;
 // Cluster: (0, "", false)
 
 static bool isConstant(string exp) {
-	return !isalpha(exp[0]);
+	return !isalpha(exp[0]) || exp == "true" || exp == "false";
 }
 
 static Datatype getConstantType(string exp, int lineN) {
@@ -42,7 +42,7 @@ static Datatype getConstantType(string exp, int lineN) {
 		parse_validate(false, lineN, "Arrays/clusters not yet implemented!!"); //TODO implement clusters/arrays
 	}
 
-	parse_validate(false, lineN, "Expression " + exp + " could not be evaluated as a constant");
+	parse_validate(false, lineN, "Invalid expression: " + exp);
 
 	return Datatype(BOOL); //Dummy return
 }
