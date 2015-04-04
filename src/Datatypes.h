@@ -54,7 +54,7 @@ public:
 	Datatype(uint32_t variableIndex, bool dummy) : typeConstant(TYPEOF) {
 		varRefs.push_back(variableIndex);
 	}
-	Datatype(vector<uint32_t> variables, int nVariables) : typeConstant(STRONGESTOF) {
+	Datatype(vector<uint32_t> variables) : typeConstant(STRONGESTOF) {
 		varRefs = variables;
 	}
 
@@ -116,46 +116,75 @@ inline bool verifyLen(string &expression, unsigned int len, uint32_t lineN) {
 static inline Datatype evaluateDatatype(string expression, uint32_t lineN, vector<string> inputNames) {
 	verifyLen(expression, 2, lineN); // Make sure it's not empty
 
-	if (expression.find("typeof(") == 0 && expression[expression.size()-1] == ')') {
-		expression = trim(expression.substr(7, expression.size()-8));
+	//TODO add cluster resolution and splitting here
+
+	size_t requiredLength = 3;
+	Datatype baseType(BOOL);
+
+	if (expression.find("typeof(") == 0 && expression.find(")") != expression.npos) {
+		requiredLength = expression.find(")") + 1;
+		string varName = trim(expression.substr(7, requiredLength-8));
+		bool found = false;
 		for (unsigned int i = 0; i < inputNames.size(); i++) {
-			if (inputNames[i] == expression) return Datatype(i, true);
+			if (inputNames[i] == varName) {
+				baseType = Datatype(i, true);
+				found = true;
+			}
 		}
-		parse_validate(false, lineN, "Parameter " + expression + " could not be found in inputs");
-	} else if (expression.find("strongestof(") == 0 && expression[expression.size()-1] == ')') {
-		expression = expression.substr(12, expression.size()-13);
-		size_t n = std::count(expression.begin(), expression.end(), ',');
-		//TODO
+		parse_validate(found, lineN, "Parameter " + varName + " could not be found in inputs");
+	} else if (expression.find("strongestof(") == 0 && expression.find(")") != expression.npos) {
+		vector<uint32_t> indices;
+		requiredLength = expression.find(")");
+		string varNames = expression.substr(12, requiredLength-13);
+		parse_validate(varNames.find(",") != varNames.npos, lineN, "strongestof() list must contain two or more references");
+		do {
+			//What a nightmare
+			size_t index = varNames.find(",");
+			string varName = trim(varNames.substr(0, index));
+			varNames = varNames.substr(index, requiredLength-index);
+			bool found = false;
+			for (unsigned int i = 0; i < inputNames.size(); i++) {
+				if (inputNames[i] == varName) {
+					indices.push_back(i);
+					found = true;
+				}
+			}
+			parse_validate(found, lineN, "Parameter " + varName + " could not be found in inputs");
+		} while (varNames.find(",") != varNames.npos);
+
+		baseType = Datatype(indices);
+	} else {
+		bool isInt = false;
+		unsigned int type = 0;
+		if (expression[0] == 'U') {
+			isInt = true; requiredLength = 2;
+		} else if (expression[0] == 'I') {
+			isInt = true; requiredLength = 2; type++;
+		}
+		verifyLen(expression, requiredLength, lineN); // Check size
+		if (isInt && expression.find("8") == 1) {type += 0; requiredLength = 2;}
+		else if (isInt && expression.find("16") == 1) {type += 2; requiredLength = 3;}
+		else if (isInt && expression.find("32") == 1) {type += 4; requiredLength = 3;}
+		else if (isInt && expression.find("64") == 1) {type += 6; requiredLength = 3;}
+		else if (expression.find("F32") == 0) {type = F32; requiredLength = 3;}
+		else if (expression.find("F64") == 0) {type = F64; requiredLength = 3;}
+		else if (expression.find("F80") == 0) {type = F80; requiredLength = 3;}
+		else if (expression.find("boolean") == 0) {type = BOOL; requiredLength = 7;}
+		else if (expression.find("string") == 0) {type = STRING; requiredLength = 6;}
+		else if (expression.find("char") == 0) {type = CHAR; requiredLength = 4;}
+		else if (expression.find("integer") == 0) {type = INTEGER; requiredLength = 7;}
+		else if (expression.find("numeric") == 0) {type = NUMERIC; requiredLength = 7;}
+		else if (expression.find("anything") == 0) {type = ANYTHING; requiredLength = 8;}
+		else {
+			parse_validate(false, lineN, "Invalid or unimplemented datatype: " + expression);
+		}
+		baseType = Datatype(type);
 	}
-
-	bool isInt = false;
-	unsigned int type = 0;
-	unsigned int requiredLength = 3;
-	if (expression[0] == 'U') {
-		isInt = true; requiredLength = 2;
-	} else if (expression[0] == 'I') {
-		isInt = true; requiredLength = 2; type++;
+	if (expression.length() == requiredLength) return baseType; // Not an array
+	else {
+		//TODO Array
+		return baseType;
 	}
-	verifyLen(expression, requiredLength, lineN); // Check size
-	if (isInt && expression.find("8") == 1) {type += 0; requiredLength = 2;}
-	else if (isInt && expression.find("16") == 1) {type += 2; requiredLength = 3;}
-	else if (isInt && expression.find("32") == 1) {type += 4; requiredLength = 3;}
-	else if (isInt && expression.find("64") == 1) {type += 6; requiredLength = 3;}
-	else if (expression.find("F32") == 0) {type = F32; requiredLength = 3;}
-	else if (expression.find("F64") == 0) {type = F64; requiredLength = 3;}
-	else if (expression.find("F80") == 0) {type = F80; requiredLength = 3;}
-	else if (expression.find("boolean") == 0) {type = BOOL; requiredLength = 7;}
-	else if (expression.find("string") == 0) {type = STRING; requiredLength = 6;}
-	else if (expression.find("char") == 0) {type = CHAR; requiredLength = 4;}
-	else if (expression.find("integer") == 0) {type = INTEGER; requiredLength = 7;}
-	else if (expression.find("numeric") == 0) {type = NUMERIC; requiredLength = 7;}
-	else if (expression.find("anything") == 0) {type = ANYTHING; requiredLength = 8;}
-
-	if (expression.length() == requiredLength) return Datatype(type); // Not an array
-
-	 //TODO Arrays and clusters
-	parse_validate(false, lineN, "Invalid or unimplemented datatype: " + expression);
-	return Datatype(BOOL);
 }
 
 static inline Datatype evaluateDatatypeWithoutAbstracts(string expression, uint32_t lineN, string errorMessage) {
