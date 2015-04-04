@@ -71,6 +71,12 @@ inline string extractDirectory(string path) {
 	return path.substr(0, found+1);
 }
 
+inline string intToString(int i) {
+	std::stringstream ss;
+	ss << i;
+	return ss.str();
+}
+
 inline string getLocalIDExpression(string prefix, uint32_t ID, uint32_t lineN) {
 	std::stringstream ss;
 	ss << prefix << "_" << ID << "_" << lineN;

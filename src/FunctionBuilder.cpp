@@ -42,6 +42,15 @@ static void parseDeclaration(ParsedCall *callRef) {
 		f.confNode_types.push_back(trim(nodeExp.substr(colonPos+1)));
 	}
 
+	for (uint32_t i = 0; i < f.nInputs; i++) { // Add input names first so that later datatypes can be resolved
+			// Retrieve exp from either inParams or outParams or auxVars
+			string exp = call.inParams[i];
+			string::size_type colonPos = exp.find(':');
+			parse_validate(colonPos != exp.npos, call.lineN, "Expected (label):(type)");
+			f.variables.push_back(trim(exp.substr(0, colonPos))); // Add name to variable list
+	}
+	vector<string> inputList = f.variables; // Define list of inputs
+
 	for (uint32_t i = 0; i < f.nInputs+f.nOutputs+call.auxVars.size(); i++) {
 		// Retrieve exp from either inParams or outParams or auxVars
 		string exp = i < f.nInputs ? call.inParams[i] :
@@ -63,8 +72,10 @@ static void parseDeclaration(ParsedCall *callRef) {
 			datatypeS = trim(datatypeS.substr(0, equalPos)); // and datatype
 		}
 
-		f.variables.push_back(label);
-		f.variable_types.push_back(evaluateDatatype(datatypeS, f.lineN));
+		if (i >= f.nInputs) f.variables.push_back(label); // Add label if it hasn't been added yet
+		Datatype adt = evaluateDatatype(datatypeS, f.lineN, inputList);
+		f.variable_types.push_back(adt);
+		parse_validate(!(adt.isAbstract() && f.memoryMode == STATIC), f.lineN, "Static classes cannot have abstract variables: " + datatypeS);
 		f.variable_defaults.push_back(defaultValue);
 	}
 
@@ -172,12 +183,12 @@ inline void assembleFile(OthFile &file, vector<ParsedCall> &calls) {
 
 					if (dir_ID == VARIABLE) {
 						file.variables.push_back(label);
-						file.variable_types.push_back(evaluateDatatype(datatypeS, call.lineN));
+						file.variable_types.push_back(evaluateDatatypeWithoutAbstracts(datatypeS, call.lineN, "Abstract datatypes not allowed in variables"));
 						file.variable_defaults.push_back(defaultValue);
 						file.variable_lines.push_back(call.lineN);
 					} else {
 						file.constants.push_back(label);
-						file.constant_types.push_back(evaluateDatatype(datatypeS, call.lineN));
+						file.constant_types.push_back(evaluateDatatypeWithoutAbstracts(datatypeS, call.lineN, "Abstract datatypes not allowed in constants"));
 						file.constant_values.push_back(defaultValue);
 						file.constant_lines.push_back(call.lineN);
 					}

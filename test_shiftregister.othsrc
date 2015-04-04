@@ -4,6 +4,6 @@ static sequence [input:string="defaultValue"]stringRegister[result:string="empty
 	[false, ""]regHelper[result]
 	[true, input]regHelper[^]
 	
-static sequence [write:Bool, value:string]stringRegHelper[glob:string] [write, value]var1[glob]
+static sequence [write:boolean, value:string]stringRegHelper[glob:string] [write, value]var1[glob]
 	
 	// 
