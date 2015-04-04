@@ -33,43 +33,36 @@ const uint8_t NUMERIC  = 0xFE;
 const uint8_t ANYTHING = 0xFF;
 
 class Datatype {
-	Datatype * baseType = NULL; // Array: Base type
-	int dimensions = 0;         // Array: Dimensions
+	Datatype * baseType = NULL;  // Array: Base type
+	int dimensions = 0;          // Array: Dimensions
 
-	Datatype * types = NULL; // Cluster: Array of types
-	int nTypes = 0;          // Cluster: Number of types
+	vector<Datatype> types;      // Cluster: Array of types
 
-	int * varRefs = NULL; // strongestof or typeof references
-	int nRefs = 0;
+	vector<uint32_t> varRefs;    // strongestof or typeof references
 
 public:
 	uint8_t typeConstant = 0;
 
 	Datatype(uint8_t typeConstant) : typeConstant(typeConstant) {}
-	Datatype(Datatype &baseType, int dimensions) : typeConstant(ARRAY) {
-		*this->baseType = baseType;
+	Datatype(Datatype * baseType, int dimensions) : typeConstant(ARRAY) {
+		this->baseType = baseType;
 		this->dimensions = dimensions;
 	}
-	Datatype(int nTypes, Datatype baseTypes[]) : typeConstant(CLUSTER) {
+	Datatype(int nTypes, vector<Datatype> baseTypes) : typeConstant(CLUSTER) {
 		this->types = baseTypes;
-		this->nTypes = nTypes;
 	}
-	Datatype(int variableIndex, bool dummy) : typeConstant(TYPEOF) {
-		int tmp[1];
-		tmp[0] = variableIndex;
-		varRefs = tmp;
-		nRefs = 1;
+	Datatype(uint32_t variableIndex, bool dummy) : typeConstant(TYPEOF) {
+		varRefs.push_back(variableIndex);
 	}
-	Datatype(int variables[], int nVariables) : typeConstant(STRONGESTOF) {
+	Datatype(vector<uint32_t> variables, int nVariables) : typeConstant(STRONGESTOF) {
 		varRefs = variables;
-		nRefs = nVariables;
 	}
 
 	bool isAbstract() {
 		if (typeConstant == ARRAY) {
 			return (*baseType).isAbstract();
 		} else if (typeConstant == CLUSTER) {
-			for (int i = 0; i < nTypes; i++) {
+			for (unsigned int i = 0; i < types.size(); i++) {
 				if (types[i].isAbstract()) return true;
 			}
 			return false;
@@ -86,7 +79,7 @@ public:
 			return "typeof(" + intToString(varRefs[0]) + ")";
 		} else if (typeConstant == STRONGESTOF) {
 			string expr = "strongestof(";
-			for (int i = 0; i < nRefs; i++) {
+			for (unsigned int i = 0; i < varRefs.size(); i++) {
 				if (i != 0) expr += ", ";
 				expr += intToString(varRefs[i]);
 			}
