@@ -35,14 +35,14 @@ inline string trim_end(string s) {
 
 inline void parse_validate(bool condition, int32_t lineN, string problem) {
 	if (!condition) {
-		cout << "Parsing Error: " << problem << " at line " << lineN;
+		cerr << "Parsing Error: " << problem << " at line " << lineN;
 		exit(1);
 	}
 }
 
 inline void parse_validate(bool condition, int32_t lineN, string problem, int32_t supplimentaryIndex) {
 	if (!condition) {
-		cout << "Parsing Error: " << problem << " " << supplimentaryIndex << " at line " << lineN;
+		cerr << "Parsing Error: " << problem << supplimentaryIndex << " at line " << lineN;
 		exit(1);
 	}
 }
