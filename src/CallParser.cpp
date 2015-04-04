@@ -246,6 +246,14 @@ static vector<ParsedCall> processIntoCalls(vector<Component> &components) {
 	return calls;
 }
 
+static bool doesCommaOrBracketFollow(int32_t startIndex) {
+	while (startIndex != lines.length()-1 && lines.at(startIndex) <= ' ') {
+		startIndex++;
+	}
+	//cerr << lines.at(startIndex) << (startIndex != lines.length()-1 && lines.at(startIndex) == ',' && lines.at(startIndex) == ']' && lines.at(startIndex) == '}');
+	return startIndex != lines.length()-1 && (lines.at(startIndex) == ',' || lines.at(startIndex) == ']' || lines.at(startIndex) == '}');
+}
+
 static vector<Component> separateComponents(bool permitConstants) {
 	// Deconstruct line byte by byte
 
@@ -257,6 +265,7 @@ static vector<Component> separateComponents(bool permitConstants) {
 
 	bool inQuotes = false;
 	uint32_t curlyCount = 0;
+	uint32_t parenCount = 0; uint32_t angleCount = 0;
 	uint32_t current = NOTHING;
 	char c;
 	bool atEnd;
@@ -321,6 +330,12 @@ static vector<Component> separateComponents(bool permitConstants) {
 				current = AUX_VAR;
 				beginIndex = i + 1;
 			}
+		} else if (c == '(') {
+			parenCount++;
+		} else if (c == '<' &&
+				(current == PARAMETER || current == CONF_NODE || current == AUX_VAR) &&
+				!doesCommaOrBracketFollow(i+1)) {
+			angleCount++;
 		} else if (c == '[') { // Open params
 			if (curlyCount == 0) {
 				parse_validate((current == NOTHING || current == CALL_NAME) &&
@@ -357,6 +372,10 @@ static vector<Component> separateComponents(bool permitConstants) {
 			}
 			curlyCount++;
 
+		} else if (parenCount > 0 && c == ')') {
+			parenCount--;
+		} else if (angleCount > 0 && c == '>') {
+			angleCount--;
 		} else if (c == '>' &&
 				(atEnd || lines.at(i + 1) <= ' ') &&
 				current != PARAMETER &&
@@ -399,7 +418,7 @@ static vector<Component> separateComponents(bool permitConstants) {
 				current = NOTHING;
 			}
 			curlyCount--;
-		} else if (c == ',' && curlyCount <= 1) {
+		} else if (c == ',' && curlyCount <= 1 && parenCount == 0 && angleCount == 0) {
 			parse_validate(current == PARAMETER || current == CONF_NODE || current == AUX_VAR,
 					lines.lineNOfIndex(i),
 					"Encountered unexpected , at index",  lines.trueIndex(i));
