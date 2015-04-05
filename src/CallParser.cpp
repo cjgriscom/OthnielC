@@ -250,7 +250,6 @@ static bool doesCommaOrBracketFollow(int32_t startIndex) {
 	while (startIndex != lines.length()-1 && lines.at(startIndex) <= ' ') {
 		startIndex++;
 	}
-	//cerr << lines.at(startIndex) << (startIndex != lines.length()-1 && lines.at(startIndex) == ',' && lines.at(startIndex) == ']' && lines.at(startIndex) == '}');
 	return startIndex != lines.length()-1 && (lines.at(startIndex) == ',' || lines.at(startIndex) == ']' || lines.at(startIndex) == '}');
 }
 
@@ -308,7 +307,10 @@ static vector<Component> separateComponents(bool permitConstants) {
 								lines.lineNOfIndex(i))); // Add spaces between calls
 			}
 		} else if (inQuotes && curlyCount == 0) { // We want to ignore other symbols when in quotation marks
-			if (c == '"' || c == '\'') {
+			if (
+					(c == '"' || c == '\'') &&
+					!(i == 0 || lines.at(i - 1) == '\\') // Ignore \' and \"
+					) {
 				inQuotes = false; // Encountered end
 			}
 		} else if ((c == '"' || c == '\'') && (curlyCount == 0 && !permitConstants)) { // If quotes found

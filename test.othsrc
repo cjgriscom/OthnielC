@@ -3,7 +3,7 @@
 import{"test_methods"}
 alias{"test_shiftregister:stringRegister", shiftRegister}
 variable <global1:string="content">
-constant <DEFAULT_REG:string="emptyRegister">
+constant <DEFAULT_REG:string="\"emptyRegister\"">
 
 instantiated sequence [a:numeric,b:numeric]test <arbitraryThing:I32(1)=<1,1>>
 	
