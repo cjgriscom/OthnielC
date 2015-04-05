@@ -107,6 +107,11 @@ inline void validatePipeAndFunctionNames(OthFile &file) {
 
 inline void replaceForwardingCharsAndConstants(OthFile &file) {
 	for (Function &f : file.functionList) {
+		for (string &var : f.variable_defaults) {
+			if (var != "" && isConstant(var)) {
+				var = file.getConstant(var, f.lineN); // Replace declaration constants
+			}
+		}
 		replaceForwardingCharactersAndConstants(file, f.callList, 0);
 	}
 }
