@@ -5,7 +5,7 @@ alias{"test_shiftregister:stringRegister", shiftRegister}
 variable <global1:string="content">
 constant <DEFAULT_REG:string="\"emptyRegister\"">
 
-instantiated sequence [a:numeric,b:numeric]test <arbitraryThing:I32(1)=<1,1>>
+instantiated sequence [a:numeric,b:numeric]test <arbitraryThing:I32(1)=12>
 	
     //[3]dim{I32(1)}[pizzaToppings]                               // Create a string array of 3 elements
 	[pizzaToppings, 0,"pepperoni", 1,"sausage", 2,"shrooms"]set // sets indices 0-2

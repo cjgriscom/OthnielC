@@ -12,12 +12,16 @@ using namespace std;
 // Bool:   false
 // I32:    0
 // F64:    0.0
-// Array:  {0,1,2} or {{0,1},{2,3}}
+// Array:  <0,1,2> or <<0,1>,<2,3>>
 // Cluster: (0, "", false)
 
 inline bool isConstant(string exp) {
 	return exp != ">" && exp != "<" && exp != "?" && exp != "^" &&
-			(!(isalpha(exp[0]) || exp[0]=='_') || exp == "true" || exp == "false");
+			(!(isalpha(exp[0]) || exp[0]=='_') ||
+					exp == "true" ||
+					exp == "false" ||
+					exp[0] == '<' ||
+					exp[0] == '(');
 }
 
 inline Datatype getConstantType(string exp, int lineN) {
@@ -39,7 +43,7 @@ inline Datatype getConstantType(string exp, int lineN) {
 		} else {
 			return Datatype(I32); // I32 is the default integer type
 		}
-	} else if (exp[0] == '{' || exp[0] == '(') {
+	} else if (exp[0] == '<' || exp[0] == '(') {
 		parse_validate(false, lineN, "Arrays/clusters not yet implemented!!"); //TODO implement clusters/arrays
 	}
 
