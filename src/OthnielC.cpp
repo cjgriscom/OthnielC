@@ -91,10 +91,12 @@ void parseAndResolveDependencies(
 			}
 			for (unsigned int i = 0; i < import.constants.size(); i++) {
 				string name = import.constants[i];
+				if (name[0] == '_') continue;
 				if (method == "*" || import.constants[i] == method) {
 					found = true;
 					string key = name;
 					if (i < aliasKeys.size()) key = aliasKeys[i];
+					cout << key;
 					file.constant_imports[key] = pair<OthFile,uint32_t>(import, i);
 				}
 			}
