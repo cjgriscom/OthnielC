@@ -1,9 +1,11 @@
 import{"test_methods.othsrc:var1"}
 
 static sequence [input:string="defaultValue"]stringRegister[result:string="emptyRegister"]
-	[false, ""]regHelper[result]
-	[true, input]regHelper[^]
+	[false, ""]stringRegHelper[result]
+	[true, input]stringRegHelper[^]
 	
 static sequence [write:boolean, value:string]stringRegHelper[glob:string] [write, value]var1[glob]
 	
-	// 
+inline sequence [input:anything]stringRegisterV2[result:typeof(input)] <storage:typeof(input)>
+	[storage]:[result]
+	[input]:[storage]
