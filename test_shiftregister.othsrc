@@ -1,4 +1,4 @@
-import{"test_methods:var1"}
+import{"test_methods.othsrc:var1"}
 
 static sequence [input:string="defaultValue"]stringRegister[result:string="emptyRegister"]
 	[false, ""]regHelper[result]

@@ -5,10 +5,15 @@
 #include <utility>
 #include <Function.h>
 #include <string>
+#include <map>
 #include <OthUtil.h>
 #include <ConstantParser.h>
 
 using namespace std;
+
+#define IMPORT_FUNCTION 0
+#define IMPORT_VARIABLE 1
+#define IMPORT_CONSTANT 2
 
 class OthFile {
 	int constantID = 0;
@@ -18,7 +23,10 @@ public:
 	vector<string> imports;
 	vector<pair<string,string>> aliases;
 
-	vector<OthFile> imports_resolved;
+	// Key: Alias or import name, Value: pair<file, index>
+	map<string, pair<OthFile,vector<uint32_t>>> function_imports;
+	map<string, pair<OthFile,uint32_t>> variable_imports;
+	map<string, pair<OthFile,uint32_t>> constant_imports;
 
 	vector<string> variables;
 	vector<Datatype> variable_types;

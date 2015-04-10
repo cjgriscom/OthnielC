@@ -8,6 +8,7 @@
 #include <Function.h>
 #include <ParsedCall.h>
 #include <string>
+#include <map>
 #include <vector>
 #include <iostream>
 using namespace std;
@@ -334,6 +335,10 @@ static void printDeclaration(Function * fnctnRef) {
 }
 
 inline void testFB(OthFile &file) {
+	cout << "Imports: " << file.function_imports.size() <<
+			" functions, " << file.variable_imports.size() <<
+			" variables, " << file.constant_imports.size() <<
+			" constants." << endl;
 	for (unsigned int i = 0; i < file.variables.size(); i++) {
 		cout << "variable <" << file.variables[i] << ":" << file.variable_types[i].asString();
 		if (file.variable_defaults[i].size() > 0) {
@@ -381,5 +386,14 @@ inline void testFB(OthFile &file) {
 	}
 }
 
+inline void consolidateBlocks(OthFile &file) {
+	for (Function &f : file.functionList) {
+		map<string, int> pipeScopes;
+		for (ParsedCall &call : f.callList) {
+			//TODO
+			// if duplicate output var in different scope, error
+		}
+	}
+}
 
 #endif
