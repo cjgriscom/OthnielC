@@ -74,7 +74,7 @@ static void parseDeclaration(ParsedCall *callRef) {
 		}
 
 		if (i >= f.nInputs) f.variables.push_back(label); // Add label if it hasn't been added yet
-		Datatype adt = evaluateDatatype(datatypeS, f.lineN, inputList);
+		Datatype adt = evaluateDatatype(datatypeS, f.lineN, inputList, f.confNodes);
 		f.variable_types.push_back(adt);
 		parse_validate(!(adt.isAbstract() && f.memoryMode == STATIC), f.lineN, "Static classes cannot have abstract variables: " + datatypeS);
 		parse_validate(!(adt.isAbstract() && defaultValue != ""), f.lineN, "Abstract types cannot have default values");

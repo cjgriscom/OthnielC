@@ -26,6 +26,7 @@ const uint8_t ARRAY = 0x70;
 const uint8_t CLUSTER = 0x71;
 
 // Abstract types
+const uint8_t NODE     = 0xFA;
 const uint8_t TYPEOF   = 0xFB;
 const uint8_t STRONGESTOF = 0xFC;
 const uint8_t INTEGER  = 0xFD;
@@ -38,7 +39,7 @@ class Datatype {
 
 	vector<Datatype> types;      // Cluster: Array of types
 
-	vector<uint32_t> varRefs;    // strongestof or typeof references
+	vector<uint32_t> varRefs;    // strongestof, typeof, or node references
 
 public:
 	uint8_t typeConstant = 0;
@@ -51,7 +52,7 @@ public:
 	Datatype(int nTypes, vector<Datatype> baseTypes) : typeConstant(CLUSTER) {
 		this->types = baseTypes;
 	}
-	Datatype(uint32_t variableIndex, bool dummy) : typeConstant(TYPEOF) {
+	Datatype(uint32_t variableIndex, bool node) : typeConstant(node ? NODE : TYPEOF) {
 		varRefs.push_back(variableIndex);
 	}
 	Datatype(vector<uint32_t> variables) : typeConstant(STRONGESTOF) {
@@ -77,6 +78,8 @@ public:
 			return "CLUSTER"; //TODO
 		} else if (typeConstant == TYPEOF) {
 			return "typeof(" + intToString(varRefs[0]) + ")";
+		} else if (typeConstant == NODE) {
+			return "node(" + intToString(varRefs[0]) + ")";
 		} else if (typeConstant == STRONGESTOF) {
 			string expr = "strongestof(";
 			for (unsigned int i = 0; i < varRefs.size(); i++) {
@@ -113,7 +116,7 @@ inline bool verifyLen(string &expression, unsigned int len, uint32_t lineN) {
 	return true;
 }
 
-static inline Datatype evaluateDatatype(string expression, uint32_t lineN, vector<string> inputNames) {
+static inline Datatype evaluateDatatype(string expression, uint32_t lineN, vector<string> inputNames, vector<string> cnodeNames) {
 	verifyLen(expression, 2, lineN); // Make sure it's not empty
 
 	//TODO add cluster resolution and splitting here
@@ -121,13 +124,24 @@ static inline Datatype evaluateDatatype(string expression, uint32_t lineN, vecto
 	size_t requiredLength = 3;
 	Datatype baseType(BOOL);
 
-	if (expression.find("typeof(") == 0 && expression.find(")") != expression.npos) {
+	if (expression.find("node(") == 0 && expression.find(")") != expression.npos) {
+		requiredLength = expression.find(")") + 1;
+		string cnName = trim(expression.substr(5, requiredLength-6));
+		bool found = false;
+		for (unsigned int i = 0; i < cnodeNames.size(); i++) {
+			if (cnodeNames[i] == cnName) {
+				baseType = Datatype(i, true); // node(n) constructor
+				found = true;
+			}
+		}
+		parse_validate(found, lineN, "Configuration node " + cnName + " could not be found in inputs");
+	} else if (expression.find("typeof(") == 0 && expression.find(")") != expression.npos) {
 		requiredLength = expression.find(")") + 1;
 		string varName = trim(expression.substr(7, requiredLength-8));
 		bool found = false;
 		for (unsigned int i = 0; i < inputNames.size(); i++) {
 			if (inputNames[i] == varName) {
-				baseType = Datatype(i, true);
+				baseType = Datatype(i, false); // typeof(t) constructor
 				found = true;
 			}
 		}
@@ -189,7 +203,7 @@ static inline Datatype evaluateDatatype(string expression, uint32_t lineN, vecto
 
 static inline Datatype evaluateDatatypeWithoutAbstracts(string expression, uint32_t lineN, string errorMessage) {
 	vector<string> emptyVector;
-	Datatype dt = evaluateDatatype(expression, lineN, emptyVector);
+	Datatype dt = evaluateDatatype(expression, lineN, emptyVector, emptyVector);
 	parse_validate(!dt.isAbstract(), lineN, errorMessage);
 	return dt;
 }

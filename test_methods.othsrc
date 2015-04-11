@@ -14,9 +14,9 @@ static sequence [write:boolean, value:I32]var3[glob:I32] // Should
 static sequence [write:boolean, value:I32]var4[glob:I32] [write, value]var1[glob]
 
 // Should
-static sequence [write:boolean, value:F64]var4Double[glob:F64] [write, value]var1[glob]
+static sequence [write:boolean, value:F64]var4[glob:F64] [write, value]var1[glob]
 
 // Should not
 static sequence [write:boolean, value:I32]var5[glob:I32] [write, value]var2[glob]
 
-instantiated sequence getDefault[r:I32=123]  // Should NOT return null; seems good now
+instantiated sequence getDefault{T:DATATYPE}[r:node(T)] // Get the default value of a specific type

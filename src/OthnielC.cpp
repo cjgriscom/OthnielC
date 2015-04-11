@@ -74,7 +74,6 @@ void parseAndResolveDependencies(
 
 					if (file.function_imports.find(key) == file.function_imports.end()) {
 						// No entry; add one
-						//XXX cout << "Adding entry to " << file.path << ": " << key << file.function_imports.size() << endl;
 						file.function_imports[key] = make_pair(import, vector<uint32_t>());
 					}
 					file.function_imports[key].second.push_back(i);
@@ -91,7 +90,7 @@ void parseAndResolveDependencies(
 			}
 			for (unsigned int i = 0; i < import.constants.size(); i++) {
 				string name = import.constants[i];
-				if (name[0] == '_') continue;
+				if (name[0] == '_') continue; // Ignore artificially added constants
 				if (method == "*" || import.constants[i] == method) {
 					found = true;
 					string key = name;
