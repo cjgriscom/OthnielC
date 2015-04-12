@@ -148,14 +148,20 @@ static inline Datatype evaluateDatatype(string expression, uint32_t lineN, vecto
 		parse_validate(found, lineN, "Parameter " + varName + " could not be found in inputs");
 	} else if (expression.find("strongestof(") == 0 && expression.find(")") != expression.npos) {
 		vector<uint32_t> indices;
-		requiredLength = expression.find(")");
+		requiredLength = expression.find(")") + 1;
 		string varNames = expression.substr(12, requiredLength-13);
 		parse_validate(varNames.find(",") != varNames.npos, lineN, "strongestof() list must contain two or more references");
+		bool end = false;
 		do {
 			//What a nightmare
 			size_t index = varNames.find(",");
+			if (index == varNames.npos) {
+				index = varNames.size();
+				end = true;
+			}
 			string varName = trim(varNames.substr(0, index));
-			varNames = varNames.substr(index, requiredLength-index);
+			cout << varNames << endl;
+			if (!end) varNames = varNames.substr(index+1, varNames.size()-(index));
 			bool found = false;
 			for (unsigned int i = 0; i < inputNames.size(); i++) {
 				if (inputNames[i] == varName) {
@@ -164,7 +170,7 @@ static inline Datatype evaluateDatatype(string expression, uint32_t lineN, vecto
 				}
 			}
 			parse_validate(found, lineN, "Parameter " + varName + " could not be found in inputs");
-		} while (varNames.find(",") != varNames.npos);
+		} while (!end);
 
 		baseType = Datatype(indices);
 	} else {
