@@ -95,7 +95,6 @@ void parseAndResolveDependencies(
 					found = true;
 					string key = name;
 					if (i < aliasKeys.size()) key = aliasKeys[i];
-					cout << key;
 					file.constant_imports[key] = pair<OthFile,uint32_t>(import, i);
 				}
 			}
@@ -110,7 +109,7 @@ int main(int argc, char **argv) {
 	vector<string> loadedFileNameList;
 
 	OthFile main;
-	parseAndResolveDependencies(main, "test.othsrc", loadedFileList, loadedFileNameList, "/");
+	parseAndResolveDependencies(main, "test_var_reference.othsrc", loadedFileList, loadedFileNameList, "/");
 	Function mainFunction;
 	bool found = false;
 	for (Function &f : main.functionList) {
@@ -122,13 +121,13 @@ int main(int argc, char **argv) {
 	}
 	parse_validate(found, 0, "Could not locate static []main[] in top-level file");
 
-	for (OthFile &file : loadedFileList) { // Begin resolving dependencies and final stages of parsing
-		resolveVarReferences(file, loadedFileList);
-		consolidateBlocks(file);
-	}
+	//for (OthFile &file : loadedFileList) { // Begin resolving dependencies and final stages of parsing
+		//resolveVarReferences(file, loadedFileList);
+		//consolidateBlocks(file);
+	//}
 
 	// Recursive resolution functions
-	//resolveFunctionReferences(file, mainFunction, loadedFileList, loadedFileNameList);
+	resolveFunctionReferences(main, mainFunction, loadedFileList, loadedFileNameList);
 	//setInlineAuxiliaries();
 
 	for (OthFile &file : loadedFileList) {

@@ -1,0 +1,11 @@
+variable <var:F64=192.234>
+constant <xyz:I32=33>
+
+static sequence main
+	
+	[var, 5]add[d0]
+	[4,xyz]add[i0]
+	[d0,i0]add[d1]
+	
+
+simple sequence [a:numeric, b:numeric]add[c:strongestof(a,b)]
