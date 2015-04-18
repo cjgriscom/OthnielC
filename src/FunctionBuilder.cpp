@@ -330,7 +330,7 @@ static void printDeclaration(Function * fnctnRef) {
 	if (fn.confNodes.size() > 0) {
 		cout << "{";
 		for (unsigned int i = 0; i < fn.confNodes.size(); i++) {
-			cout << fn.confNodes[i] << ":" << fn.confNode_types[i];
+			cout << fn.confNodes[i] << ":" << (int)fn.confNode_types[i];
 			if (i < fn.confNodes.size()-1) cout << ", ";
 		}
 		cout << "}";
