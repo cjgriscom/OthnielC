@@ -11,7 +11,6 @@ class Call;
 #include <VarReference.h>
 #include <Datatypes.h>
 #include <Keywords.h>
-#include <Call.h>
 
 class ConfNode {
 	uint8_t mode;

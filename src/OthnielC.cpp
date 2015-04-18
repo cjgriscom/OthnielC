@@ -1,11 +1,11 @@
 #include <CallParser.cpp>
 #include <FunctionBuilder.cpp>
 #include <PipeManager.cpp>
-#include <ReferenceResolver.cpp>
 #include <OthFile.h>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <ReferenceResolver.cpp>
 using namespace std;
 
 void parseFile(OthFile &container, string fileName) {

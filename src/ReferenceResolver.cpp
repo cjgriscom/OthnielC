@@ -13,10 +13,10 @@
 #include <iostream>
 using namespace std;
 
-stack<Function> callStack_res;
+static stack<Function*> callStack_res;
 
 inline void resolveFunctionReferences(OthFile &file, Function &function, vector<OthFile> &loadedFileList, vector<string> &loadedFileNameList) {
-	callStack_res.push(function);
+	callStack_res.push(&function);
 	for (ParsedCall &call : function.callList) {
 		string name = call.callName;
 		bool found = false;
