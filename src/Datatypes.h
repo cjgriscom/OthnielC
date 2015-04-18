@@ -160,8 +160,7 @@ static inline Datatype evaluateDatatype(string expression, uint32_t lineN, vecto
 				end = true;
 			}
 			string varName = trim(varNames.substr(0, index));
-			cout << varNames << endl;
-			if (!end) varNames = varNames.substr(index+1, varNames.size()-(index));
+			if (!end) varNames = varNames.substr(index+1, varNames.size()-index);
 			bool found = false;
 			for (unsigned int i = 0; i < inputNames.size(); i++) {
 				if (inputNames[i] == varName) {

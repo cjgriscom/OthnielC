@@ -17,10 +17,6 @@ struct ParsedCall {
 	vector<string> auxVars; // For internal use
 	vector<vector<ParsedCall>> confNodes;
 	string callName = "UNDEFINED";
-
-	// For resolution stage
-	Function * callReference = NULL;
-	bool callResolved = false;
 };
 
 #define qualifiesAsKeyword(x) (x.inParams.size() == 0 && x.outParams.size() == 0 && !x.isBlockStart && !x.isBlockEnd)
