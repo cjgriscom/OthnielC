@@ -74,7 +74,7 @@ void parseAndResolveDependencies(
 
 					if (file.function_imports.find(key) == file.function_imports.end()) {
 						// No entry; add one
-						file.function_imports[key] = make_pair(import, vector<uint32_t>());
+						file.function_imports[key] = make_pair(&import, vector<uint32_t>());
 					}
 					file.function_imports[key].second.push_back(i);
 				}
@@ -85,7 +85,7 @@ void parseAndResolveDependencies(
 					found = true;
 					string key = name;
 					if (i < aliasKeys.size()) key = aliasKeys[i];
-					file.variable_imports[key] = pair<OthFile,uint32_t>(import, i);
+					file.variable_imports[key] = make_pair(&import, i);
 				}
 			}
 			for (unsigned int i = 0; i < import.constants.size(); i++) {
@@ -95,7 +95,7 @@ void parseAndResolveDependencies(
 					found = true;
 					string key = name;
 					if (i < aliasKeys.size()) key = aliasKeys[i];
-					file.constant_imports[key] = pair<OthFile,uint32_t>(import, i);
+					file.constant_imports[key] = make_pair(&import, i);
 				}
 			}
 			parse_validate(found, 0, "Could not find reference: " + importName);
@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
 	Function mainFunction;
 	bool found = false;
 	for (Function &f : main.functionList) {
-		if (f.memoryMode == STATIC && f.nInputs == 0 && f.nOutputs ==0 && f.functionName == "main") {
+		if (f.memoryMode == STATIC && f.nInputs == 0 && f.nOutputs ==0 && f.confNodes.empty() && f.functionName == "main") {
 			found = true;
 			mainFunction = f;
 		}
@@ -127,7 +127,7 @@ int main(int argc, char **argv) {
 	//}
 
 	// Recursive resolution functions
-	resolveFunctionReferences(main, mainFunction, loadedFileList, loadedFileNameList);
+	resolveFunctionReferences(main, mainFunction);
 	//setInlineAuxiliaries();
 
 	for (OthFile &file : loadedFileList) {

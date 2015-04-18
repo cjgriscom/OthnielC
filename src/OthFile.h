@@ -26,9 +26,9 @@ public:
 	vector<pair<string,string>> aliases;
 
 	// Key: Alias or import name, Value: pair<file, index>
-	map<string, pair<OthFile,vector<uint32_t>>> function_imports;
-	map<string, pair<OthFile,uint32_t>> variable_imports;
-	map<string, pair<OthFile,uint32_t>> constant_imports;
+	map<string, pair<OthFile*,vector<uint32_t>>> function_imports;
+	map<string, pair<OthFile*,uint32_t>> variable_imports;
+	map<string, pair<OthFile*,uint32_t>> constant_imports;
 
 	vector<string> variables;
 	vector<Datatype> variable_types;
