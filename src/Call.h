@@ -7,7 +7,7 @@ class Call;
 #include <string>
 #include <OthUtil.h>
 #include <Function.h>
-#include <ParsedCall.h>
+#include <VarReference.h>
 #include <ConfigurationNode.h>
 #include <Datatypes.h>
 

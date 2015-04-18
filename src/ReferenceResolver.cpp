@@ -13,20 +13,20 @@
 #include <iostream>
 using namespace std;
 
-//stack<Function> callStack;
+stack<Function> callStack_res;
 
 inline void resolveFunctionReferences(OthFile &file, Function &function, vector<OthFile> &loadedFileList, vector<string> &loadedFileNameList) {
-	//callStack.push(function);
+	callStack_res.push(function);
 	for (ParsedCall &call : function.callList) {
 		string name = call.callName;
 		bool found = false;
-		/*for (pair<string,string> p : file.aliases) {
+		for (pair<string,string> p : file.aliases) {
 			if (name == p.second) {
 				found = true; name = p.first; // TODO filename manipulation... ugh
 			}
-		}*/
+		}
 	}
-	//callStack.pop();
+	callStack_res.pop();
 
 }
 

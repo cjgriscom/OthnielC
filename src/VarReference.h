@@ -12,8 +12,10 @@
 #include <string>
 #include <OthUtil.h>
 #include <Function.h>
-#include <ParsedCall.h>
 #include <Datatypes.h>
+
+class VarReference;
+class Call;
 
 #define VAR_PIPE 0
 #define VAR_FUNC 1
