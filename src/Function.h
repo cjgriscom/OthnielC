@@ -7,6 +7,9 @@
 #include <Datatypes.h>
 #include <Keywords.h>
 #include <ParsedCall.h>
+#include <VarReference.h>
+#include <ConfigurationNode.h>
+#include <Call.h>
 
 using namespace std;
 
@@ -30,9 +33,17 @@ public:
 	vector<string> variable_defaults; // No default should be set to "". A default value for an input indicates optional.
 
 	vector<string> confNodes;
-	vector<string> confNode_types;
+	vector<uint8_t> confNode_types;
 
 	vector<ParsedCall> callList;
+
+	// Resolved data
+	vector<Call>     r_callList;
+	vector<Datatype> r_inputs;
+	vector<Datatype> r_outputs;
+	vector<Datatype> r_aux;
+	vector<uint8_t>  r_confNodes; // Where uint8_t refers to the constant confNode types in ConfigurationNode.h
+
 };
 
 #endif

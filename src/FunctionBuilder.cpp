@@ -40,7 +40,10 @@ static void parseDeclaration(ParsedCall *callRef) {
 		parse_validate(colonPos != nodeExp.npos, call.lineN, "Expected (label):(configuration node type)");
 
 		f.confNodes.push_back(trim(nodeExp.substr(0, colonPos)));
-		f.confNode_types.push_back(trim(nodeExp.substr(colonPos+1)));
+		string nodeType = trim(nodeExp.substr(colonPos+1));
+		uint8_t nodeType8 = cn_id(nodeType);
+		parse_validate(nodeType8 != INVALID, call.lineN, "Invalid configuration node type: " + nodeType);
+		f.confNode_types.push_back(nodeType8);
 	}
 
 	for (uint32_t i = 0; i < f.nInputs; i++) { // Add input names first so that later datatypes can be resolved
@@ -383,16 +386,6 @@ inline void testFB(OthFile &file) {
 		hasAux = false;
 		cout << endl;
 		printCallsFB(1, &(fn.callList), '\n');
-	}
-}
-
-inline void consolidateBlocks(OthFile &file) {
-	for (Function &f : file.functionList) {
-		map<string, int> pipeScopes;
-		for (ParsedCall &call : f.callList) {
-			//TODO
-			// if duplicate output var in different scope, error
-		}
 	}
 }
 
