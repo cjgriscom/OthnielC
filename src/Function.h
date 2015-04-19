@@ -38,6 +38,7 @@ public:
 	vector<ParsedCall> callList;
 
 	// Resolved data
+	bool			 resolved = false;
 	vector<Call>     r_callList;
 	vector<Datatype> r_inputs;
 	vector<Datatype> r_outputs;
