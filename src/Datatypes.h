@@ -92,7 +92,7 @@ public:
 	#define DT_EQUAL        3
 	uint32_t getCompatibilityValue(Datatype &other) {
 		if (typeConstant == ARRAY && other.typeConstant == ARRAY) {
-			return dimensions == other.dimensions && baseType->getCompatibilityValue(*(other.baseType));
+			return dimensions == other.dimensions ? baseType->getCompatibilityValue(*(other.baseType)) : DT_INCOMPATIBLE;
 		}
 		if (typeConstant == CLUSTER && other.typeConstant == CLUSTER) {
 			if (types.size() != other.types.size()) return DT_INCOMPATIBLE;
