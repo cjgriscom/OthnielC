@@ -111,7 +111,7 @@ public:
 		if (typeConstant == INTEGER && other.isNumeric(true)) return DT_CASTABLE;
 
 		if (other.typeConstant == NUMERIC && isNumeric(false)) return DT_CASTABLE;
-		if (other.typeConstant == INTEGER && isInteger(false)) return DT_CASTABLE;
+		if (other.typeConstant == INTEGER && isNumeric(false)) return DT_CASTABLE;
 
 		if (isNumeric(false) && other.isNumeric(false)) {
 			if (isInteger(false)) {
