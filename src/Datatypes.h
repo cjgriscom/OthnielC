@@ -59,6 +59,20 @@ public:
 		varRefs = variables;
 	}
 
+	bool isSigned() {
+		return typeConstant <= I32 && typeConstant % 2 == 1;
+	}
+
+	bool isNumeric(bool allowAbstract) {
+		if (allowAbstract && (typeConstant == INTEGER || typeConstant == NUMERIC)) return true;
+		return typeConstant <= F80;
+	}
+
+	bool isInteger(bool allowAbstract) {
+		if (allowAbstract && typeConstant == INTEGER) return true;
+		return typeConstant <= I64;
+	}
+
 	bool isAbstract() {
 		if (typeConstant == ARRAY) {
 			return (*baseType).isAbstract();
@@ -71,6 +85,57 @@ public:
 			return typeConstant >= TYPEOF;
 		}
 	}
+
+	#define DT_INCOMPATIBLE 0
+	#define DT_CASTABLE     1  // Order: functionType.getCompatibilityValue(callType)
+	#define DT_COMPATIBLE   2  // Order: functionType.getCompatibilityValue(callType)
+	#define DT_EQUAL        3
+	uint32_t getCompatibilityValue(Datatype &other) {
+		if (typeConstant == ARRAY && other.typeConstant == ARRAY) {
+			return dimensions == other.dimensions && baseType->getCompatibilityValue(*(other.baseType));
+		}
+		if (typeConstant == CLUSTER && other.typeConstant == CLUSTER) {
+			if (types.size() != other.types.size()) return DT_INCOMPATIBLE;
+			uint32_t minValue = DT_EQUAL;
+			for (uint32_t i = 0; i < types.size(); i++) {
+				uint32_t compat = types[i].getCompatibilityValue(other.types[i]);
+				if (compat < minValue) minValue = compat;
+			}
+			return minValue;
+		}
+
+		if (typeConstant == other.typeConstant) return DT_EQUAL;
+
+		if ((typeConstant == NUMERIC || typeConstant == F80) && other.isNumeric(true)) return DT_COMPATIBLE;
+		if (typeConstant == INTEGER && other.isInteger(true)) return DT_COMPATIBLE;
+		if (typeConstant == INTEGER && other.isNumeric(true)) return DT_CASTABLE;
+
+		if (other.typeConstant == NUMERIC && isNumeric(false)) return DT_CASTABLE;
+		if (other.typeConstant == INTEGER && isInteger(false)) return DT_CASTABLE;
+
+		if (isNumeric(false) && other.isNumeric(false)) {
+			if (isInteger(false)) {
+				if (other.isInteger(false)) {
+					if (isSigned()) {
+						return typeConstant > other.typeConstant + 1 ? DT_COMPATIBLE : DT_CASTABLE;
+					} else {
+						if (other.isSigned()) {
+							return DT_CASTABLE;
+						} else {
+							return typeConstant > other.typeConstant ? DT_COMPATIBLE : DT_CASTABLE;
+						}
+					}
+				} else {
+					return DT_CASTABLE;
+				}
+			} else {
+				return typeConstant > other.typeConstant ? DT_COMPATIBLE : DT_CASTABLE;
+			}
+		}
+
+		return DT_INCOMPATIBLE;
+	}
+
 	string asString() {
 		if (typeConstant == ARRAY) {
 			return baseType->asString() + "(" + intToString(dimensions) + ")";
