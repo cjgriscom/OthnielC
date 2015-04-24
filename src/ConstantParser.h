@@ -2,8 +2,8 @@
 #define CONSTANTPARSER_H_
 
 #include <string>
+#include <OthUtil.h>
 #include <Datatypes.h>
-#include <ctype.h>
 
 using namespace std;
 

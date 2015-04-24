@@ -1,11 +1,8 @@
 #ifndef OTHFILE_H_
 #define OTHFILE_H_
 
-class OthFile;
-
 #include <vector>
 #include <utility>
-#include <Function.h>
 #include <string>
 #include <map>
 #include <OthUtil.h>

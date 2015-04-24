@@ -1,7 +1,10 @@
+#include <OthUtil.h>
+#include <OthFile.h>
+#include <Function.h>
+#include <Call.h>
 #include <CallParser.cpp>
 #include <FunctionBuilder.cpp>
 #include <PipeManager.cpp>
-#include <OthFile.h>
 #include <iostream>
 #include <fstream>
 #include <algorithm>
@@ -104,6 +107,42 @@ void parseAndResolveDependencies(
 	}
 }
 
+void printTest(Datatype func, Datatype call) {
+	string val = "equal";
+	if (func.getCompatibilityValue(call) == 1) val = "castable";
+	if (func.getCompatibilityValue(call) == 2) val = "compatible";
+	if (func.getCompatibilityValue(call) == 0) val = "incompatible";
+	cout << func.asString() << " with " << call.asString() << ": " << val << endl;
+}
+
+void testTypes() {
+	Datatype string = Datatype(STRING);
+	Datatype numeric = Datatype(NUMERIC);
+	Datatype integer = Datatype(INTEGER);
+
+	printTest(Datatype(&integer,1), Datatype(&numeric,1));
+	printTest(Datatype(&string,5), Datatype(&string,1));
+	printTest(Datatype(BOOL), Datatype(BOOL));
+	printTest(Datatype(BOOL), numeric);
+	printTest(numeric, string);
+	printTest(numeric, Datatype(I32));
+	printTest(numeric, integer);
+	printTest(integer, numeric);
+	printTest(Datatype(I32), numeric);
+	printTest(Datatype(I64), integer);
+	printTest(Datatype(F80), numeric);
+
+	printTest(Datatype(U32), Datatype(I8));
+	printTest(Datatype(U32), Datatype(U16));
+	printTest(Datatype(U32), Datatype(U64));
+
+	printTest(Datatype(I32), Datatype(U8));
+	printTest(Datatype(I32), Datatype(U16));
+	printTest(Datatype(I32), Datatype(U32));
+	printTest(Datatype(F64), Datatype(INTEGER));
+
+}
+
 int main(int argc, char **argv) {
 	vector<OthFile> loadedFileList;
 	vector<string> loadedFileNameList;
@@ -137,5 +176,7 @@ int main(int argc, char **argv) {
 		cout << endl << "FILE: " << file.path << endl;
 		testFB(file);
 	}
+
+	testTypes();
 
 }

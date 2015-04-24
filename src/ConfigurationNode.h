@@ -1,14 +1,9 @@
 #ifndef CONFNODE_H_
 #define CONFNODE_H_
 
-class ConfNode;
-class Call;
-
 #include <vector>
 #include <string>
 #include <OthUtil.h>
-#include <Function.h>
-#include <VarReference.h>
 #include <Datatypes.h>
 #include <Keywords.h>
 
@@ -23,7 +18,7 @@ class ConfNode {
 public:
 	Datatype type; // Common to all but CHAIN
 	vector<Call> calls; // Common to CHAIN and SOUT_CHAIN
-	VarReference constantReference; // Just CONSTANT
+	VarReference * constantReference; // Just CONSTANT
 
 	//ConfNode(VarReference constant) : constantReference(constant) {}
 

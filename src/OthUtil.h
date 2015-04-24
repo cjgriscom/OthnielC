@@ -8,6 +8,14 @@
 #include <sstream> // for to_string
 using namespace std;
 
+// Forward Defs
+class Function;
+class Call;
+struct ParsedCall;
+class ConfNode;
+class OthFile;
+class VarReference;
+
 // Inspired by Java's trim function
 inline string trim(string s) {
 	string::size_type len = s.length();

@@ -1,15 +1,12 @@
 #ifndef CALL_H_
 #define CALL_H_
 
-class Call;
-
 #include <vector>
 #include <string>
 #include <OthUtil.h>
-#include <Function.h>
-#include <VarReference.h>
-#include <ConfigurationNode.h>
 #include <Datatypes.h>
+#include <ConfigurationNode.h>
+#include <VarReference.h>
 
 class Call {
 public:

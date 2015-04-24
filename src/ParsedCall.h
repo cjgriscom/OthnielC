@@ -6,8 +6,6 @@
 #include <OthUtil.h>
 using namespace std;
 
-class Function; // Forward declaration of Function for resolver
-
 struct ParsedCall {
 	uint32_t lineN;
 	bool isBlockStart = false;

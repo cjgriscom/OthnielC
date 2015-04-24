@@ -4,12 +4,10 @@
 #include <vector>
 #include <string>
 #include <OthUtil.h>
+#include <ParsedCall.h>
+#include <Call.h>
 #include <Datatypes.h>
 #include <Keywords.h>
-#include <ParsedCall.h>
-#include <VarReference.h>
-#include <Call.h>
-#include <ConfigurationNode.h>
 
 using namespace std;
 
