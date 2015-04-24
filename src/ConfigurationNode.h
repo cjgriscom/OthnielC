@@ -6,6 +6,7 @@
 #include <OthUtil.h>
 #include <Datatypes.h>
 #include <Keywords.h>
+#include <VarReference.h>
 
 class ConfNode {
 	uint8_t mode;
@@ -18,9 +19,15 @@ class ConfNode {
 public:
 	Datatype type; // Common to all but CHAIN
 	vector<Call> calls; // Common to CHAIN and SOUT_CHAIN
-	VarReference * constantReference; // Just CONSTANT
+	VarReference constantReference; // Just CONSTANT
 
-	//ConfNode(VarReference constant) : constantReference(constant) {}
+	ConfNode(VarReference constant) :
+			mode(CONSTANT),
+			file(constant.othFile()),
+			func(constant.function()),
+			type(constant.datatype()),
+			constantReference(constant)
+			{}
 
 	bool hasType() {return mode != CHAIN;}
 	bool isDatatype() {return mode == DATATYPE;}

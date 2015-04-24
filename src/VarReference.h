@@ -37,17 +37,17 @@ public:
 	VarReference(OthFile * file, Function * function, Call * callRef, uint32_t outIndex, Datatype &type) :
 			mode(VAR_PIPE),
 			file(file),
-			type(type),
 			func(function),
 			call(callRef),
-			i(outIndex) {}
+			i(outIndex),
+			type(type) {}
 
 	// Constant OR Variable
 	VarReference(bool isConstant, OthFile * file, uint32_t index) :
 			mode(isConstant ? VAR_CNST : VAR_GLOB),
 			file(file),
-			type((isConstant ? file->constant_types : file->variable_types)[index]),
-			i(index) {}
+			i(index),
+			type((isConstant ? file->constant_types : file->variable_types)[index]) {}
 
 	bool isOptional() {return garbageOrOptional;}
 	bool isGarbage() {return garbageOrOptional;}
