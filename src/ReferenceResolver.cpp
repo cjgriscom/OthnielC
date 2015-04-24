@@ -91,23 +91,21 @@ static VarReference resolveVarReference(bool isInput, string name, uint32_t line
 		for (unsigned int i = 0; i < self.inputs.size(); i++) {
 			//TODO
 		}
-	}
-
-	// Pipes
-	while (true) {
-		parse_validate(!blockStack.empty(), lineN, "Variable or pipe reference could not be resolved: " + name);
-		vector<Call> * callScope = blockStack.top(); blockStack.pop();
-		for (unsigned int i = 0; i < callScope->size(); i++) {
-			Call * currentCall = &(callScope->at(i));
-			for (uint32_t j = 0; j < currentCall->outputs.size(); j++) {
-				VarReference v = currentCall->outputs[j];
-				if (v.name == name) {
-					return VarReference(name, &file, &function, currentCall, j, v.datatype());
+	} else { // Pipes (inputs only)
+		while (true) {
+			parse_validate(!blockStack.empty(), lineN, "Variable or pipe reference could not be resolved: " + name);
+			vector<Call> * callScope = blockStack.top(); blockStack.pop();
+			for (unsigned int i = 0; i < callScope->size(); i++) {
+				Call * currentCall = &(callScope->at(i));
+				for (uint32_t j = 0; j < currentCall->outputs.size(); j++) {
+					VarReference v = currentCall->outputs[j];
+					if (v.name == name) {
+						return VarReference(name, &file, &function, currentCall, j, v.datatype());
+					}
 				}
 			}
 		}
 	}
-
 }
 
 static void setCallInputs(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
