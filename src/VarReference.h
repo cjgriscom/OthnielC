@@ -6,13 +6,18 @@
 #include <OthUtil.h>
 #include <Datatypes.h>
 #include <OthFile.h>
+#include <Function.h>
+
+static pair<uint8_t,uint32_t> vr_Construct_func(Function * func, uint32_t index, Datatype * type);
 
 #define VAR_JUNK 0
 #define VAR_PIPE 1
-#define VAR_FUNC 2
-#define VAR_GLOB 3
-#define VAR_CNST 4
-#define VAR_BLCK 5
+#define VAR_IN   2
+#define VAR_OUT  3
+#define VAR_AUX  4
+#define VAR_GLOB 5
+#define VAR_CNST 6
+#define VAR_BLCK 7
 
 class VarReference {
 	uint8_t mode;
@@ -25,34 +30,50 @@ class VarReference {
 
 	uint32_t i = 0; // Common to all 3
 	vector<uint32_t> subIndices; // Only VAR_BLCK
-	Datatype type;
+	Datatype type = Datatype(ANYTHING);
 
 public:
+
+	string name;
+
 	VarReference() : mode(VAR_JUNK), type(Datatype(ANYTHING)) { // ^ or ? pipe
 		file = NULL;
 		garbageOrOptional = true;
 	}
 
-	// Pipe
-	VarReference(OthFile * file, Function * function, Call * callRef, uint32_t outIndex, Datatype &type) :
+	// Pipe reference
+	VarReference(string name, OthFile * file, Function * function, Call * callRef, uint32_t outIndex, Datatype type) :
 			mode(VAR_PIPE),
 			file(file),
 			func(function),
 			call(callRef),
 			i(outIndex),
-			type(type) {}
+			type(type),
+			name(name) {}
 
 	// Constant OR Variable
-	VarReference(bool isConstant, OthFile * file, uint32_t index) :
+	VarReference(string name, bool isConstant, OthFile * file, uint32_t index) :
 			mode(isConstant ? VAR_CNST : VAR_GLOB),
 			file(file),
 			i(index),
-			type((isConstant ? file->constant_types : file->variable_types)[index]) {}
+			type((isConstant ? file->constant_types : file->variable_types)[index]),
+			name(name) {}
+
+	// In/out/aux
+	VarReference(string name, OthFile * file, Function * function, uint32_t index) :
+			file(file),
+			func(function) {
+		pair<uint8_t,uint32_t> p = vr_Construct_func(function, index, &type);
+		mode = p.first;
+		i = p.first;
+	}
 
 	bool isOptional() {return garbageOrOptional;}
 	bool isGarbage() {return garbageOrOptional;}
 	bool isPipe() {return mode == VAR_PIPE;}
-	bool isFunction() {return mode == VAR_FUNC;}
+	bool isF_In() {return mode == VAR_IN;}
+	bool isF_Out() {return mode == VAR_OUT;}
+	bool isF_Aux() {return mode == VAR_AUX;}
 	bool isGlobal() {return mode == VAR_GLOB;}
 	bool isConstant() {return mode == VAR_CNST;}
 	OthFile * othFile() {return file;}

@@ -45,4 +45,23 @@ public:
 
 };
 
+static pair<uint8_t,uint32_t> vr_Construct_func(Function * func, uint32_t index, Datatype * type) {
+	uint8_t mode;
+	uint32_t i;
+	if (index < func->nInputs) {
+		mode = VAR_IN;
+		i = index;
+		*type = func->r_inputs[i];
+	} else if (index < func->nInputs + func->nOutputs) {
+		mode = VAR_OUT;
+		i = index - func->nInputs;
+		*type = func->r_outputs[i];
+	} else {
+		mode = VAR_AUX;
+		i = index - func->nInputs - func->nOutputs;
+		*type = func->r_aux[i];
+	}
+	return make_pair(mode, i);
+}
+
 #endif

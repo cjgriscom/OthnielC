@@ -50,41 +50,61 @@ static void findPotentialMatches(string name, uint32_t lineN, OthFile &local,
 	parse_validate(!resolvedFiles.empty(), lineN, "Reference could not be resolved: " + name);
 }
 
-static VarReference resolveVarReference(string name, uint32_t lineN, OthFile &file, Function &function, stack<vector<Call>*> blockStack) {
+static VarReference resolveVarReference(bool isInput, string name, uint32_t lineN, OthFile &file, Function &function, Call &self, stack<vector<Call>*> blockStack) {
 	if (name == "?" || name == "^") return VarReference(); // Garbage/? pipe
 
-	// Constants
+	// Constants (inputs only)
 	if (file.constant_imports.find(name) == file.constant_imports.end() ) { // Search local constants
 		for (unsigned int i = 0; i < file.constants.size(); i++) {
 			if (name == file.constants[i]) {
-				return VarReference(true, &file, i);
+				parse_validate(isInput, lineN, "Cannot output to a constant");
+				return VarReference(name, true, &file, i);
 			}
 		}
 	} else { // Search imports
 		pair<OthFile*,uint32_t> p = file.constant_imports[name];
-		return VarReference(true, p.first, p.second);
+		parse_validate(isInput, lineN, "Cannot output to a constant");
+		return VarReference(name, true, p.first, p.second);
 	}
 
 	// Variables
 	if (file.variable_imports.find(name) == file.variable_imports.end() ) { // Search local variables
 		for (unsigned int i = 0; i < file.variables.size(); i++) {
 			if (name == file.variables[i]) {
-				return VarReference(true, &file, i);
+				return VarReference(name, true, &file, i);
 			}
 		}
 	} else { // Search imports
 		pair<OthFile*,uint32_t> p = file.variable_imports[name];
-		return VarReference(true, p.first, p.second);
+		return VarReference(name, true, p.first, p.second);
 	}
 
-	// TODO function in/out/aux
+	// Function in/out/aux
+	for (unsigned int i = 0; i < function.variables.size(); i++) {
+		if (function.variables[i] == name) {
+			return VarReference(name, &file, &function, i);
+		}
+	}
+
+	// Self-reference (outputs only)
+	if (!isInput) {
+		for (unsigned int i = 0; i < self.inputs.size(); i++) {
+			//TODO
+		}
+	}
 
 	// Pipes
 	while (true) {
 		parse_validate(!blockStack.empty(), lineN, "Variable or pipe reference could not be resolved: " + name);
 		vector<Call> * callScope = blockStack.top(); blockStack.pop();
 		for (unsigned int i = 0; i < callScope->size(); i++) {
-
+			Call * currentCall = &(callScope->at(i));
+			for (uint32_t j = 0; j < currentCall->outputs.size(); j++) {
+				VarReference v = currentCall->outputs[j];
+				if (v.name == name) {
+					return VarReference(name, &file, &function, currentCall, j, v.datatype());
+				}
+			}
 		}
 	}
 
@@ -92,7 +112,7 @@ static VarReference resolveVarReference(string name, uint32_t lineN, OthFile &fi
 
 static void setCallInputs(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
 	for (unsigned int i = 0; i < oldCall.inParams.size(); i++) {
-		VarReference v = resolveVarReference(oldCall.inParams[i], oldCall.lineN, file, function, blockStack);
+		VarReference v = resolveVarReference(true, oldCall.inParams[i], oldCall.lineN, file, function, call, blockStack);
 		call.inputs.push_back(v);
 		// TODO validate optional pipes
 	}
