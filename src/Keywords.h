@@ -40,6 +40,7 @@ const uint8_t SIMPLE       = 0x03;
 #define SOUT_CHAIN 2 //has a type
 #define CONSTANT 3   //has a type
 
+#define cn_kw(id)  (id==DATATYPE ? "DATATYPE" : (id==CHAIN ? "CHAIN" : (id==SOUT_CHAIN ? "SOUT_CHAIN" : "CONSTANT")))
 #define cn_id(kwd) (kwd=="DATATYPE" ? DATATYPE : (kwd=="CHAIN" ? CHAIN : (kwd=="SOUT_CHAIN" ? SOUT_CHAIN : (kwd=="CONSTANT" ? CONSTANT : INVALID))))
 
 #endif
