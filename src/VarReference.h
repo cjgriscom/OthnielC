@@ -17,7 +17,8 @@ static pair<uint8_t,uint32_t> vr_Construct_func(Function * func, uint32_t index,
 #define VAR_AUX  4
 #define VAR_GLOB 5
 #define VAR_CNST 6
-#define VAR_BLCK 7
+#define VAR_BLCK 7 //TODO
+#define VAR_SELF 8
 
 class VarReference {
 	uint8_t mode;
@@ -41,13 +42,13 @@ public:
 		garbageOrOptional = true;
 	}
 
-	// Pipe reference
-	VarReference(string name, OthFile * file, Function * function, Call * callRef, uint32_t outIndex, Datatype type) :
-			mode(VAR_PIPE),
+	// Pipe reference or self reference
+	VarReference(string name, OthFile * file, Function * function, Call * callRef, uint32_t index, Datatype type, bool selfRef) :
+			mode(selfRef ? VAR_SELF : VAR_PIPE),
 			file(file),
 			func(function),
 			call(callRef),
-			i(outIndex),
+			i(index),
 			type(type),
 			name(name) {}
 
@@ -76,6 +77,7 @@ public:
 	bool isF_Aux() {return mode == VAR_AUX;}
 	bool isGlobal() {return mode == VAR_GLOB;}
 	bool isConstant() {return mode == VAR_CNST;}
+	bool isSelfRef() {return mode == VAR_SELF;}
 	OthFile * othFile() {return file;}
 	Function * function() {return func;}
 	Call * callRef() {return call;}
