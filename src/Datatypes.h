@@ -60,7 +60,7 @@ public:
 	}
 
 	bool isSigned() {
-		return typeConstant <= I32 && typeConstant % 2 == 1;
+		return typeConstant <= I64 && typeConstant % 2 == 1;
 	}
 
 	bool isNumeric(bool allowAbstract) {
