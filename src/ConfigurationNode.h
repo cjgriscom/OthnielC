@@ -38,9 +38,6 @@ public:
 	Function * function() {return func;}
 	Call * callRef() {return call;}
 	Datatype datatype() {return type;}
-	Datatype satisfiedDatatype(vector<Datatype> callInputs) { // Add the option of passing the call stack??
-		//TODO
-	}
 };
 
 #endif /* CONFNODE_H_ */

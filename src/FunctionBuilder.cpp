@@ -324,7 +324,7 @@ static void printCallsFB(int indent, vector<ParsedCall> *calls, char delim) {
 	}
 }
 
-static void printDeclaration(Function * fnctnRef) {
+inline void printDeclaration(Function * fnctnRef) {
 	Function fn = *fnctnRef;
 	cout << fn.functionName;
 	if (fn.confNodes.size() > 0) {
