@@ -95,7 +95,7 @@ static VarReference resolveVarReference(bool isInput, string name, uint32_t line
 		while (true) {
 			parse_validate(!blockStack.empty(), lineN, "Variable or pipe reference could not be resolved: " + name);
 			vector<Call> * callScope = blockStack.top(); blockStack.pop();
-			for (unsigned int i = 0; i < callScope->size(); i++) {
+			for (unsigned int i = callScope->size() - 1; i >= 0; i--) {
 				Call * currentCall = &(callScope->at(i));
 				for (uint32_t j = 0; j < currentCall->outputs.size(); j++) {
 					VarReference v = currentCall->outputs[j];
