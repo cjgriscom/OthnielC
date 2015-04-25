@@ -19,6 +19,7 @@ static pair<uint8_t,uint32_t> vr_Construct_func(Function * func, uint32_t index,
 #define VAR_CNST 6
 #define VAR_BLCK 7 //TODO
 #define VAR_SELF 8
+#define VAR_NEW  9
 
 class VarReference {
 	uint8_t mode;
@@ -68,6 +69,13 @@ public:
 		mode = p.first;
 		i = p.first;
 	}
+
+	// New
+	VarReference(string name, OthFile * file, Function * function, Datatype type) :
+			mode(VAR_NEW),
+			file(file),
+			func(function),
+			type(type) {}
 
 	bool isOptional() {return garbageOrOptional;}
 	bool isGarbage() {return garbageOrOptional;}
