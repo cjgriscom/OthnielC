@@ -90,7 +90,7 @@ public:
 	#define DT_CASTABLE     1  // Order: functionType.getCompatibilityValue(callType)
 	#define DT_COMPATIBLE   2  // Order: functionType.getCompatibilityValue(callType)
 	#define DT_EQUAL        3
-	uint32_t getCompatibilityValue(Datatype &other) {
+	uint32_t getCompatibilityValue(Datatype other) {
 		if (typeConstant == ARRAY && other.typeConstant == ARRAY) {
 			return dimensions == other.dimensions ? baseType->getCompatibilityValue(*(other.baseType)) : DT_INCOMPATIBLE;
 		}

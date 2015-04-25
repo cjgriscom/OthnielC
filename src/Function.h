@@ -43,6 +43,40 @@ public:
 	vector<uint8_t>  r_confNodes() {return confNode_types;}
 	vector<Datatype> r_aux;
 
+	string toString_name_confNodes() {
+		string str = "";
+		str += functionName;
+		if (confNodes.size() > 0) {
+			str += "{";
+			for (unsigned int i = 0; i < confNodes.size(); i++) {
+				str += confNodes[i] + ":" + cn_kw(confNode_types[i]);
+				if (i < confNodes.size()-1) str += ", ";
+			}
+			str +=  "}";
+		}
+		return str;
+	}
+
+	string toString() {
+		string str = "";
+		bool hasAux = false;
+		if (variables.size() == 0) str += toString_name_confNodes();
+		for (int i = 0; i < ((int)variables.size()); i++) {
+			if (nInputs == 0) str += toString_name_confNodes();
+			if ((i == 0 && nInputs > 0) || (i == nInputs && nOutputs > 0)) str += "[";
+			if (i == nInputs+nOutputs) {str += " <"; hasAux=true;}
+			str += variables[i] + ":" + variable_types[i].asString();
+			if (variable_defaults[i].size() > 0) str += "=" + variable_defaults[i];
+			bool printAuxBracket = i == ((int)variables.size())-1 && hasAux;
+			if (i == nInputs-1 || i == nInputs+nOutputs-1) str += "]";
+			else if (!printAuxBracket) str += ", ";
+			if (i == nInputs-1) str += toString_name_confNodes();
+			if (printAuxBracket) str += ">";
+		}
+		hasAux = false;
+		return str;
+	}
+
 };
 
 static pair<uint8_t,uint32_t> vr_Construct_func(Function * func, uint32_t index, Datatype * type) {

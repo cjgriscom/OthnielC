@@ -368,22 +368,8 @@ inline void testFB(OthFile &file) {
 	}
 	cout << endl;
 	for (Function fn : file.functionList) {
-		bool hasAux = false;
 		cout << mm_kw(fn.memoryMode) << " " << rm_kw(fn.runMode) << " ";
-		if (fn.variables.size() == 0) printDeclaration(&fn);
-		for (int i = 0; i < ((int)fn.variables.size()); i++) {
-			if (fn.nInputs == 0) printDeclaration(&fn);
-			if ((i == 0 && fn.nInputs > 0) || (i == fn.nInputs && fn.nOutputs > 0)) cout << "[";
-			if (i == fn.nInputs+fn.nOutputs) {cout << " <"; hasAux=true;}
-			cout << fn.variables[i] << ":" << fn.variable_types[i].asString();
-			if (fn.variable_defaults[i].size() > 0) cout << "=" << fn.variable_defaults[i];
-			bool printAuxBracket = i == ((int)fn.variables.size())-1 && hasAux;
-			if (i == fn.nInputs-1 || i == fn.nInputs+fn.nOutputs-1) cout << "]";
-			else if (!printAuxBracket) cout << ", ";
-			if (i == fn.nInputs-1) printDeclaration(&fn);
-			if (printAuxBracket) cout << ">";
-		}
-		hasAux = false;
+		cout << fn.toString();
 		cout << endl;
 		printCallsFB(1, &(fn.callList), '\n');
 	}
