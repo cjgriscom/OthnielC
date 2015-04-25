@@ -15,21 +15,46 @@
 #include <iostream>
 using namespace std;
 
+inline void resolveFunctionReferences(OthFile &file, Function &function);
+
 static stack<Function*> callStack_res;
 
-static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &newList, uint32_t lineN, OthFile &local, ParsedCall &call,
-		vector<OthFile *> &resolvedFiles, vector<uint32_t> &resolvedIndices) {
+static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &newList, uint32_t lineN, OthFile &local,
+		ParsedCall &call, Call &newCall, vector<OthFile *> &resolvedFiles, vector<uint32_t> &resolvedIndices) {
+
+	bool isCastable = false;
+	Function *castf = NULL;
 
 	for (unsigned int i = 0; i < resolvedFiles.size(); i++) {
 		Function *f = &(resolvedFiles[i]->functionList[resolvedIndices[i]]);
 		if (f->nInputs == call.inParams.size() &&
 				f->nOutputs == call.outParams.size() &&
-				f->confNodes.size() == call.confNodes.size()) {
-			newList.push_back(make_pair(resolvedFiles[i], f));
+				f->confNodes.size() == call.confNodes.size()) { // Verify arg lengths
+
+			// -->-->--> Resolve the potential match **important important** this is the recursive call <--<--<--
+			resolveFunctionReferences(*resolvedFiles[i], *f);
+			// *******
+
+			bool valid = true;
+			bool hasIncompat = false;
+			for (unsigned int inp = 0; inp < call.inParams.size(); inp++) {
+				uint8_t cv = f->r_inputs[inp].getCompatibilityValue(newCall.inputs[inp].datatype());
+				if (cv <= DT_CASTABLE) {
+					valid = false;
+					if (cv == DT_INCOMPATIBLE) hasIncompat = true;
+				}
+			}
+			if (!hasIncompat) {
+				isCastable = true;
+				castf = f;
+			}
+			if (valid) newList.push_back(make_pair(resolvedFiles[i], f));
 		}
 	}
 
-	parse_validate(!resolvedIndices.empty(), lineN, "Reference could not be resolved: " + call.callName + "; number of inputs and outputs don't match any known functions");
+	parse_validate(!newList.empty(), lineN, isCastable ?
+			"Reference could not be resolved: " + call.callName + " (function '" + castf->toString() + "' is a close match but some parameters must be cast)" :
+			"Reference could not be resolved: " + call.callName + "; inputs/outputs/configuration nodes don't match any known functions");
 }
 
 static void findPotentialMatches(string name, uint32_t lineN, OthFile &local,
@@ -119,6 +144,17 @@ static void setCallInputs(OthFile &file, Function &function, stack<vector<Call>*
 }
 
 inline void resolveFunctionReferences(OthFile &file, Function &function) {
+	if (function.resolved) return; // TODO also check if it's already in the call stack (recursion) and kill static recursion
+	// Split up variables
+	for (unsigned int i = 0; i < function.variables.size(); i++) {
+		if (i < function.nInputs) {
+			function.r_inputs.push_back(function.variable_types[i]);
+		} else if (i < function.nInputs + function.nOutputs) {
+			function.r_outputs.push_back(function.variable_types[i]);
+		} else {
+			function.r_aux.push_back(function.variable_types[i]);
+		}
+	}
 	callStack_res.push(&function);
 
 	vector<Call> newCallList;
@@ -135,20 +171,21 @@ inline void resolveFunctionReferences(OthFile &file, Function &function) {
 		newCall.isBlockStart = call.isBlockStart; //TODO and we need to process a special case!!
 		newCall.isBlockEnd = call.isBlockEnd; //TODO and we need to process another special case!!
 		setCallInputs(file, function, blockStack, newCall, call);
+		// TODO set configuration nodes
 
 		findPotentialMatches(name, call.lineN, file, resolvedFiles, resolvedIndices);
-		cout << call.lineN << "	Found " << resolvedIndices.size() << " valid references. Name: " << resolvedFiles[0]->functionList[resolvedIndices[0]].functionName << endl;
+		//cout << call.lineN << "	Found " << resolvedIndices.size() << " valid references. Name: " << resolvedFiles[0]->functionList[resolvedIndices[0]].functionName << endl;
 
 		vector<pair<OthFile*,Function*>> resolved;
-		pairAndEliminateBasicConflicts(resolved, call.lineN, file, call, resolvedFiles, resolvedIndices);
-		cout << call.lineN << "	  --> " << resolved.size() << " valid references." << endl;
+		pairAndEliminateBasicConflicts(resolved, call.lineN, file, call, newCall, resolvedFiles, resolvedIndices);
+		//cout << call.lineN << "	  --> " << resolved.size() << " valid references." << endl;
 
-		//parse_validate(!foundImport, f.lineN, "Local function '" + f.functionName + "' conflicts with an import in " + (*resolvedFile).path);
+		parse_validate(resolved.size() == 1, call.lineN, "Ambiguous reference (multiple matches) for call " + call.callName);
 		//vector<>
 		blockStack.top()->push_back(newCall);
 	}
 	callStack_res.pop();
-
+	function.resolved = true;
 }
 
 

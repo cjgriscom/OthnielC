@@ -11,3 +11,4 @@ static sequence main
 simple sequence [a:numeric, b:numeric]add[c:strongestof(a,b)]
 simple sequence [a:U64, b:numeric]add[c:strongestof(a,b)]
 simple sequence [a:numeric, b:numeric, c:numeric]add[d:strongestof(a,b,c)]
+	[a,b]add[>] [<,c]add[d]

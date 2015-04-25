@@ -128,7 +128,7 @@ void testTypes() {
 	printTest(numeric, Datatype(I32));
 	printTest(numeric, integer);
 	printTest(integer, numeric);
-	printTest(Datatype(I32), numeric);
+	printTest(Datatype(I64), Datatype(I16));
 	printTest(Datatype(I64), integer);
 	printTest(Datatype(F80), numeric);
 
