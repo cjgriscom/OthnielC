@@ -16,6 +16,7 @@
 using namespace std;
 
 inline void resolveFunctionReferences(OthFile &file, Function &function);
+inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> &callList, vector<Call> &newCallList, stack<vector<Call>*> &blockStack);
 
 static stack<Function*> callStack_res;
 
@@ -143,6 +144,48 @@ static void setCallInputs(OthFile &file, Function &function, stack<vector<Call>*
 	}
 }
 
+static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
+	for (unsigned int i = 0; i < oldCall.confNodes.size(); i++) {
+		vector<ParsedCall> node = oldCall.confNodes[i];
+		vector<Call> newCallList;
+		if (call.callReference->confNode_types[i] == CHAIN) {
+			parseCallList(file, function, node, newCallList, blockStack);
+		}
+		call.confNodes.push_back(ConfNode(file, function, call.lineN,
+				node,
+				call.callReference->confNode_types[i],
+				newCallList,
+				blockStack)); //TODO constructor
+	}
+}
+
+inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> &callList, vector<Call> &newCallList, stack<vector<Call>*> &blockStack) {
+	for (ParsedCall &call : callList) {// TODO add built-in functions
+		string name = call.callName;
+		vector<OthFile *> resolvedFiles;
+		vector<uint32_t> resolvedIndices;
+
+		Call newCall;
+		newCall.lineN = call.lineN;
+		newCall.isBlockStart = call.isBlockStart; //TODO and we need to process a special case!!
+		newCall.isBlockEnd = call.isBlockEnd; //TODO and we need to process another special case!!
+		setCallInputs(file, function, blockStack, newCall, call);
+
+		findPotentialMatches(name, call.lineN, file, resolvedFiles, resolvedIndices);
+
+		vector<pair<OthFile*,Function*>> resolved;
+		pairAndEliminateBasicConflicts(resolved, call.lineN, file, call, newCall, resolvedFiles, resolvedIndices);
+
+		parse_validate(resolved.size() == 1, call.lineN, "Ambiguous reference (multiple matches) for call " + call.callName);
+		newCall.callReference = resolved[0].second;
+
+		defineConfNodes(file, function, blockStack, newCall, call);
+
+		//vector<>
+		blockStack.top()->push_back(newCall);
+	}
+}
+
 inline void resolveFunctionReferences(OthFile &file, Function &function) {
 	if (function.resolved) return; // TODO also check if it's already in the call stack (recursion) and kill static recursion
 	// Split up variables
@@ -161,29 +204,8 @@ inline void resolveFunctionReferences(OthFile &file, Function &function) {
 	stack<vector<Call>*> blockStack;
 	blockStack.push(&newCallList);
 
-	for (ParsedCall &call : function.callList) {// TODO add built-in functions
-		string name = call.callName;
-		vector<OthFile *> resolvedFiles;
-		vector<uint32_t> resolvedIndices;
+	parseCallList(file, function, function.callList, newCallList, blockStack);
 
-		Call newCall;
-		newCall.lineN = call.lineN;
-		newCall.isBlockStart = call.isBlockStart; //TODO and we need to process a special case!!
-		newCall.isBlockEnd = call.isBlockEnd; //TODO and we need to process another special case!!
-		setCallInputs(file, function, blockStack, newCall, call);
-		// TODO set configuration nodes
-
-		findPotentialMatches(name, call.lineN, file, resolvedFiles, resolvedIndices);
-		//cout << call.lineN << "	Found " << resolvedIndices.size() << " valid references. Name: " << resolvedFiles[0]->functionList[resolvedIndices[0]].functionName << endl;
-
-		vector<pair<OthFile*,Function*>> resolved;
-		pairAndEliminateBasicConflicts(resolved, call.lineN, file, call, newCall, resolvedFiles, resolvedIndices);
-		//cout << call.lineN << "	  --> " << resolved.size() << " valid references." << endl;
-
-		parse_validate(resolved.size() == 1, call.lineN, "Ambiguous reference (multiple matches) for call " + call.callName);
-		//vector<>
-		blockStack.top()->push_back(newCall);
-	}
 	callStack_res.pop();
 	function.resolved = true;
 }

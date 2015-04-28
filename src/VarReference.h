@@ -50,7 +50,7 @@ public:
 			func(function),
 			call(callRef),
 			i(index),
-			type(type),
+			type(type), // TODO these types might need to be satisfied
 			name(name) {}
 
 	// Constant OR Variable
@@ -75,7 +75,7 @@ public:
 			mode(VAR_NEW),
 			file(file),
 			func(function),
-			type(type) {}
+			type(type) {}  // TODO these types might need to be satisfied
 
 	bool isOptional() {return garbageOrOptional;}
 	bool isGarbage() {return garbageOrOptional;}
