@@ -16,23 +16,24 @@ class ConfNode {
 public:
 	Datatype type = Datatype(BOOL); // Common to all but CHAIN
 	vector<Call> calls; // Common to CHAIN and SOUT_CHAIN
-	VarReference constantReference; // Just CONSTANT
+	VarReference reference; // Just CONSTANT
 
 	ConfNode(bool isFuncReference, uint8_t declaredMode, vector<Call> newCallList) :
 			mode(declaredMode),
 			isReference(isFuncReference),
 			calls(newCallList) {}
 
-	bool hasType() {return mode != CHAIN;}
 	bool isDeclaredReference() {return isReference;}
+	OthFile * declaredReferenceFile() {return reference.othFile();}
+	Function * declaredReferenceFunction() {return reference.function();}
+	uint32_t declaredReferenceIndex() {return reference.index();}
+
+	bool hasType() {return mode != CHAIN;}
 	bool isDatatype() {return mode == DATATYPE;}
 	bool isChain() {return mode == CHAIN;}
 	bool isSingleOutputChain() {return mode == SOUT_CHAIN;}
-	void update_SOUT_CHAIN(Datatype outtype) {type = outtype;}
 	bool isConstant() {return mode == CONSTANT;}
-	//OthFile * othFile() {return file;}
-	//Function * function() {return func;}
-	//Call * callRef() {return call;}
+	VarReference getReference() {return reference;}
 	Datatype datatype() {return type;}
 };
 

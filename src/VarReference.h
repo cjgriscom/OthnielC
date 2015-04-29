@@ -77,6 +77,14 @@ public:
 			func(function),
 			type(type) {}  // TODO these types might need to be satisfied
 
+	// ConfNode cheat constructor (internal)
+	VarReference(OthFile * file, Function * function, uint32_t index) :
+			file(file),
+			func(function) {
+		mode = -1;
+		i = index;
+	}
+
 	bool isOptional() {return garbageOrOptional;}
 	bool isGarbage() {return garbageOrOptional;}
 	bool isPipe() {return mode == VAR_PIPE;}

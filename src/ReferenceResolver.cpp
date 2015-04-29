@@ -149,33 +149,47 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 		vector<ParsedCall> node = oldCall.confNodes[i];
 		vector<Call> newCallList;
 
+		string word = "";
 		bool isOneWord = node.size() == 1 && qualifiesAsKeyword_strict(node[0]);
 		uint8_t declaredMode = call.callReference->confNode_types[i];
 		bool isReference = false;
+		uint32_t refIndex;
 
 		// TODO first, if if qualifies as a keyword see if it references something in the function declaration
+		for (refIndex = 0; refIndex < function.confNodes.size(); refIndex++) {
+			if (word == function.confNodes[i]) {
+				parse_validate(function.confNode_types[i] == declaredMode, call.lineN, "ConfNode reference doesn't match declared type: " + word);
+				isReference = true;
+				break;
+			}
+		}
 
-		if (declaredMode == CHAIN || declaredMode == SOUT_CHAIN) {
-			parseCallList(file, function, node, newCallList, blockStack);
-		} else {
-			parse_validate(isOneWord, call.lineN, "Configuration node is not a valid " + string(cn_kw(declaredMode)) + " expression");
-			ParsedCall data = node[0];
+		if (!isReference) {
+			if (declaredMode == CHAIN || declaredMode == SOUT_CHAIN) {
+				parseCallList(file, function, node, newCallList, blockStack);
+			} else {
+				parse_validate(isOneWord, call.lineN, "Configuration node is not a valid " + string(cn_kw(declaredMode)) + " expression");
+				ParsedCall data = node[0];
 
-			if (declaredMode == DATATYPE) {
-				//TODO
-			} else if (declaredMode == CONSTANT) {
-				//TODO
+				word = data.callName;
 			}
 		}
 
 		ConfNode cn = ConfNode(isReference, declaredMode, newCallList);
 
-		if (call.callReference->confNode_types[i] == SOUT_CHAIN) {
+		if (isReference) {
+			cn.reference = VarReference(&file, &function, refIndex);
+		} else if (call.callReference->confNode_types[i] == SOUT_CHAIN) {
 			Call lastCall = newCallList[newCallList.size() - 1];
 			parse_validate(lastCall.outputs.size() == 1, lastCall.lineN, "Last call in an SOUT_CHAIN must have one output");
-			cn.update_SOUT_CHAIN(lastCall.outputs[0].datatype()); // TODO this might be problematic (datatype, not satisfied datatype)
+			cn.type = lastCall.outputs[0].datatype(); // TODO this might be problematic (datatype, not satisfied datatype)
+		} else if (declaredMode == DATATYPE) {
+			cn.type = evaluateDatatypeWithoutAbstracts(word, call.lineN, "Invalid DATATYPE node: " + word);
+		} else if (declaredMode == CONSTANT) {
+			cn.reference = resolveVarReference(false, word, call.lineN, file, function, call, blockStack);
+			parse_validate(cn.reference.isConstant(), call.lineN, "CONSTANT " + word + " does not reference a constant");
 		}
-		call.confNodes.push_back(cn); //TODO constructor
+		call.confNodes.push_back(cn);
 	}
 }
 
