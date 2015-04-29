@@ -148,15 +148,27 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 	for (unsigned int i = 0; i < oldCall.confNodes.size(); i++) {
 		vector<ParsedCall> node = oldCall.confNodes[i];
 		vector<Call> newCallList;
-		if (call.callReference->confNode_types[i] == CHAIN || call.callReference->confNode_types[i] == SOUT_CHAIN) {
+
+		bool isOneWord = node.size() == 1 && qualifiesAsKeyword_strict(node[0]);
+		uint8_t declaredMode = call.callReference->confNode_types[i];
+		bool isReference = false;
+
+		// TODO first, if if qualifies as a keyword see if it references something in the function declaration
+
+		if (declaredMode == CHAIN || declaredMode == SOUT_CHAIN) {
 			parseCallList(file, function, node, newCallList, blockStack);
+		} else {
+			parse_validate(isOneWord, call.lineN, "Configuration node is not a valid " + string(cn_kw(declaredMode)) + " expression");
+			ParsedCall data = node[0];
+
+			if (declaredMode == DATATYPE) {
+				//TODO
+			} else if (declaredMode == CONSTANT) {
+				//TODO
+			}
 		}
 
-		ConfNode cn = ConfNode(file, function, call.lineN,
-				node,
-				call.callReference->confNode_types[i],
-				newCallList,
-				blockStack);
+		ConfNode cn = ConfNode(isReference, declaredMode, newCallList);
 
 		if (call.callReference->confNode_types[i] == SOUT_CHAIN) {
 			Call lastCall = newCallList[newCallList.size() - 1];
