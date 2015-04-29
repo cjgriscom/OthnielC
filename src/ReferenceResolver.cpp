@@ -140,7 +140,8 @@ static void setCallInputs(OthFile &file, Function &function, stack<vector<Call>*
 	for (unsigned int i = 0; i < oldCall.inParams.size(); i++) {
 		VarReference v = resolveVarReference(true, oldCall.inParams[i], oldCall.lineN, file, function, call, blockStack);
 		call.inputs.push_back(v);
-		// TODO validate optional pipes
+		parse_validate(!(v.isOptional() && function.variable_defaults[i].empty()), call.lineN,
+				"Optional input specified for non-optional parameter");
 	}
 }
 
@@ -213,7 +214,6 @@ inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> 
 
 		defineConfNodes(file, function, blockStack, newCall, call);
 
-		//vector<>
 		blockStack.top()->push_back(newCall);
 	}
 }
