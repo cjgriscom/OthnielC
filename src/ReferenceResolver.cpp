@@ -148,14 +148,22 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 	for (unsigned int i = 0; i < oldCall.confNodes.size(); i++) {
 		vector<ParsedCall> node = oldCall.confNodes[i];
 		vector<Call> newCallList;
-		if (call.callReference->confNode_types[i] == CHAIN) {
+		if (call.callReference->confNode_types[i] == CHAIN || call.callReference->confNode_types[i] == SOUT_CHAIN) {
 			parseCallList(file, function, node, newCallList, blockStack);
 		}
-		call.confNodes.push_back(ConfNode(file, function, call.lineN,
+
+		ConfNode cn = ConfNode(file, function, call.lineN,
 				node,
 				call.callReference->confNode_types[i],
 				newCallList,
-				blockStack)); //TODO constructor
+				blockStack);
+
+		if (call.callReference->confNode_types[i] == SOUT_CHAIN) {
+			Call lastCall = newCallList[newCallList.size() - 1];
+			parse_validate(lastCall.outputs.size() == 1, lastCall.lineN, "Last call in an SOUT_CHAIN must have one output");
+			cn.update_SOUT_CHAIN(lastCall.outputs[0].datatype()); // TODO this might be problematic (datatype, not satisfied datatype)
+		}
+		call.confNodes.push_back(cn); //TODO constructor
 	}
 }
 
