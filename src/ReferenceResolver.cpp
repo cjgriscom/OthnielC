@@ -151,11 +151,12 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 
 		string word = "";
 		bool isOneWord = node.size() == 1 && qualifiesAsKeyword_strict(node[0]);
+		if (isOneWord) word = node[0].callName;
+
 		uint8_t declaredMode = call.callReference->confNode_types[i];
 		bool isReference = false;
 		uint32_t refIndex;
 
-		// TODO first, if if qualifies as a keyword see if it references something in the function declaration
 		for (refIndex = 0; refIndex < function.confNodes.size(); refIndex++) {
 			if (word == function.confNodes[i]) {
 				parse_validate(function.confNode_types[i] == declaredMode, call.lineN, "ConfNode reference doesn't match declared type: " + word);
@@ -169,9 +170,6 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 				parseCallList(file, function, node, newCallList, blockStack);
 			} else {
 				parse_validate(isOneWord, call.lineN, "Configuration node is not a valid " + string(cn_kw(declaredMode)) + " expression");
-				ParsedCall data = node[0];
-
-				word = data.callName;
 			}
 		}
 
