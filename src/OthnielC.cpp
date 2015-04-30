@@ -148,14 +148,16 @@ int main(int argc, char **argv) {
 	vector<OthFile> loadedFileList;
 	vector<string> loadedFileNameList;
 
-	OthFile main;
-	parseAndResolveDependencies(main, "test_var_reference.othsrc", loadedFileList, loadedFileNameList, "/");
-	Function mainFunction;
+	OthFile seed;
+	parseAndResolveDependencies(seed, "test_var_reference.othsrc", loadedFileList, loadedFileNameList, "/");
+	OthFile * main = &loadedFileList[loadedFileList.size()-1]; // TODO bad assumption?
+	cout << " Last file : " << loadedFileNameList[loadedFileNameList.size()-1];
+	Function * mainFunction;
 	bool found = false;
-	for (Function &f : main.functionList) {
+	for (Function &f : main->functionList) {
 		if (f.memoryMode == STATIC && f.nInputs == 0 && f.nOutputs ==0 && f.confNodes.empty() && f.functionName == "main") {
 			found = true;
-			mainFunction = f;
+			mainFunction = &f;
 		}
 
 	}
@@ -167,7 +169,7 @@ int main(int argc, char **argv) {
 	//}
 
 	// Recursive resolution functions
-	resolveFunctionReferences(main, mainFunction);
+	resolveFunctionReferences(*main, *mainFunction);
 	//setInlineAuxiliaries();
 
 	for (OthFile &file : loadedFileList) {
@@ -175,7 +177,7 @@ int main(int argc, char **argv) {
 
 		//addExplicitNumericCasts();
 		cout << endl << "FILE: " << file.path << endl;
-		testFB(file);
+		testFB(file, true);
 	}
 
 	testTypes();
