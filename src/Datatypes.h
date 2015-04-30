@@ -183,7 +183,12 @@ public:
 		if (typeConstant == ARRAY) {
 			return types[0].asString() + "(" + intToString(dimensions) + ")";
 		} else if (typeConstant == CLUSTER){
-			return "CLUSTER"; //TODO
+			string expression = "(";
+			for (uint32_t i = 0; i < types.size(); i++) {
+				expression += types[i].asString();
+				if (i < types.size() - 1) expression += ", ";
+			}
+			return expression + ")";
 		} else if (typeConstant == TYPEOF) {
 			return "typeof(" + intToString(varRefs[0]) + ")";
 		} else if (typeConstant == NODE) {
