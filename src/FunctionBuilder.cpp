@@ -81,6 +81,7 @@ static void parseDeclaration(ParsedCall *callRef) {
 		f.variable_types.push_back(adt);
 		parse_validate(!(adt.isAbstract() && f.memoryMode == STATIC), f.lineN, "Static classes cannot have abstract variables: " + datatypeS);
 		parse_validate(!(adt.isAbstract() && defaultValue != ""), f.lineN, "Abstract types cannot have default values");
+		parse_validate(!(i >= f.nInputs && adt.isIndependantAbstract()), f.lineN, "Output or auxiliary datatype is not fully defined: " + adt.asString());
 		f.variable_defaults.push_back(defaultValue);
 	}
 

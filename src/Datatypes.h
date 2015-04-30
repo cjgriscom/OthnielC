@@ -85,6 +85,19 @@ public:
 		}
 	}
 
+	bool isIndependantAbstract() {
+		if (typeConstant == ARRAY) {
+			return types[0].isIndependantAbstract();
+		} else if (typeConstant == CLUSTER) {
+			for (unsigned int i = 0; i < types.size(); i++) {
+				if (types[i].isIndependantAbstract()) return true;
+			}
+			return false;
+		} else {
+			return typeConstant >= INTEGER;
+		}
+	}
+
 	#define DT_INCOMPATIBLE 0
 	#define DT_CASTABLE     1  // Order: functionType.getCompatibilityValue(callType)
 	#define DT_COMPATIBLE   2  // Order: functionType.getCompatibilityValue(callType)
@@ -135,23 +148,25 @@ public:
 		return DT_INCOMPATIBLE;
 	}
 
-	Datatype nextSatisfiedType(vector<Datatype> call_input_types, vector<Datatype> call_confNode_types) {
+	Datatype nextSatisfiedType(vector<Datatype> call_input_types, vector<Datatype> call_confNode_types, uint32_t lineN) {
 		Datatype self = *this;
 		Datatype newType = self;
 
 		if (isAbstract()) {
 			if (typeConstant == ARRAY) {
-
+				return Datatype(self.types[0].nextSatisfiedType(call_input_types, call_confNode_types, lineN), self.dimensions);
 			} else if (typeConstant == CLUSTER) {
-
+				vector<Datatype> baseTypes;
+				for (Datatype &ref : self.types) {
+					baseTypes.push_back(ref.nextSatisfiedType(call_input_types, call_confNode_types, lineN));
+				}
+				return Datatype(baseTypes.size(), baseTypes);
 			} else if (typeConstant == TYPEOF) {
 				newType = call_input_types[self.varRefs[0]];
 			} else if (typeConstant == STRONGESTOF) {
-
+				parse_validate(false, lineN, "strongestof() not yet implemented"); //TODO
 			} else if (typeConstant == NODE) {
 				newType = call_confNode_types[self.varRefs[0]];
-			} else if (typeConstant == ANYTHING || typeConstant == NUMERIC || typeConstant == INTEGER) {
-				//TODO outputs can't have anything, numeric, or integer definitions.  How to handle?
 			}
 		}
 		return newType;

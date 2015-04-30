@@ -133,7 +133,7 @@ static VarReference resolveVarReference(bool isInput, uint32_t outindex, string 
 		}
 	}
 	// Create new output
-	return VarReference(name, &file, &function, self.callReference->r_outputs[outindex].nextSatisfiedType(self.input_types(), self.output_types()));
+	return VarReference(name, &file, &function, self.callReference->r_outputs[outindex].nextSatisfiedType(self.input_types(), self.output_types(), lineN));
 }
 
 static void setCallOutputs(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
