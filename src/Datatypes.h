@@ -138,7 +138,7 @@ public:
 
 	Datatype nextSatisfiedType(vector<Datatype> call_input_types, vector<Datatype> call_confNode_types) {
 		//TODO
-		return this;
+		return *this;
 	}
 
 	string asString() {

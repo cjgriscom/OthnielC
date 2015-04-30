@@ -76,7 +76,7 @@ static void findPotentialMatches(string name, uint32_t lineN, OthFile &local,
 	parse_validate(!resolvedFiles.empty(), lineN, "Reference could not be resolved: " + name);
 }
 
-static VarReference resolveVarReference(bool isInput, string name, uint32_t lineN, OthFile &file, Function &function, Call &self, stack<vector<Call>*> blockStack) {
+static VarReference resolveVarReference(bool isInput, uint32_t outindex, string name, uint32_t lineN, OthFile &file, Function &function, Call &self, stack<vector<Call>*> blockStack) {
 	if (name == "?" || name == "^") return VarReference(); // Garbage/? pipe
 
 	// Constants (inputs only)
@@ -132,19 +132,20 @@ static VarReference resolveVarReference(bool isInput, string name, uint32_t line
 			}
 		}
 	}
-	parse_validate(false, lineN, "Variable or pipe reference could not be resolved: " + name);
-	return VarReference();
+	// Create new output
+	return VarReference(name, &file, &function, self.callReference->r_outputs[outindex].nextSatisfiedType(self.input_types(), self.output_types()));
 }
 
 static void setCallOutputs(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
 	for (unsigned int i = 0; i < oldCall.outParams.size(); i++) {
-
+		VarReference v = resolveVarReference(false, i, oldCall.outParams[i], oldCall.lineN, file, function, call, blockStack);
+		call.outputs.push_back(v);
 	}
 }
 
 static void setCallInputs(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
 	for (unsigned int i = 0; i < oldCall.inParams.size(); i++) {
-		VarReference v = resolveVarReference(true, oldCall.inParams[i], oldCall.lineN, file, function, call, blockStack);
+		VarReference v = resolveVarReference(true, 0, oldCall.inParams[i], oldCall.lineN, file, function, call, blockStack);
 		call.inputs.push_back(v);
 		parse_validate(!(v.isOptional() && function.variable_defaults[i].empty()), call.lineN,
 				"Optional input specified for non-optional parameter");
@@ -191,7 +192,7 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 		} else if (declaredMode == DATATYPE) {
 			cn.type = evaluateDatatypeWithoutAbstracts(word, call.lineN, "Invalid DATATYPE node: " + word);
 		} else if (declaredMode == CONSTANT) {
-			cn.reference = resolveVarReference(false, word, call.lineN, file, function, call, blockStack);
+			cn.reference = resolveVarReference(false, 0, word, call.lineN, file, function, call, blockStack);
 			cn.type = cn.reference.datatype();
 			parse_validate(cn.reference.isConstant(), call.lineN, "CONSTANT " + word + " does not reference a constant");
 		}
