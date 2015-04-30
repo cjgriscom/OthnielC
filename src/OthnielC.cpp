@@ -9,6 +9,7 @@
 #include <fstream>
 #include <algorithm>
 #include <ReferenceResolver.cpp>
+#include <StdLib.h>
 using namespace std;
 
 void parseFile(OthFile &container, string fileName) {
@@ -51,54 +52,60 @@ void parseAndResolveDependencies(
 
 		vector<string> aliasKeys;
 		vector<string> newImports;
+		file.imports.push_back("STD_LIB"); // Import native functions
 		for (pair<string,string> aliasPair : file.aliases) {
 			newImports.push_back(aliasPair.first);
 			aliasKeys.push_back(aliasPair.second);
 		}
 		for (string name : file.imports) newImports.push_back(name);
 		for (string importName : newImports) {
-			OthFile import;
-			importName = importName.substr(1, importName.size()-2);
-			string name = extractFilename(importName);
+			OthFile * import;
 			string method = "*";
-			string::size_type colonPos = name.find_last_of(":");
-			if (colonPos != name.npos) {
-				method = name.substr(colonPos+1);
-				name = name.substr(0, colonPos);
+			if (importName == "STD_LIB") {
+				import = &STANDARD_LIB;
+			} else {
+				importName = importName.substr(1, importName.size()-2);
+				string name = extractFilename(importName);
+
+				string::size_type colonPos = name.find_last_of(":");
+				if (colonPos != name.npos) {
+					method = name.substr(colonPos+1);
+					name = name.substr(0, colonPos);
+				}
+				parseAndResolveDependencies(*import, name, loadedFileList, loadedFileNameList, currentPath + extractDirectory(importName));
 			}
-			parseAndResolveDependencies(import, name, loadedFileList, loadedFileNameList, currentPath + extractDirectory(importName));
 			bool found = false;
-			for (unsigned int i = 0; i < import.functionList.size(); i++) {
-				string name = import.functionList[i].functionName;
-				if (method == "*" || import.functionList[i].functionName == method) {
+			for (unsigned int i = 0; i < import->functionList.size(); i++) {
+				string name = import->functionList[i].functionName;
+				if (method == "*" || import->functionList[i].functionName == method) {
 					found = true;
 					string key = name;
 					if (i < aliasKeys.size()) key = aliasKeys[i];
 
 					if (file.function_imports.find(key) == file.function_imports.end()) {
 						// No entry; add one
-						file.function_imports[key] = make_pair(&import, vector<uint32_t>());
+						file.function_imports[key] = make_pair(import, vector<uint32_t>());
 					}
 					file.function_imports[key].second.push_back(i);
 				}
 			}
-			for (unsigned int i = 0; i < import.variables.size(); i++) {
-				string name = import.variables[i];
-				if (method == "*" || import.variables[i] == method) {
+			for (unsigned int i = 0; i < import->variables.size(); i++) {
+				string name = import->variables[i];
+				if (method == "*" || import->variables[i] == method) {
 					found = true;
 					string key = name;
 					if (i < aliasKeys.size()) key = aliasKeys[i];
-					file.variable_imports[key] = make_pair(&import, i);
+					file.variable_imports[key] = make_pair(import, i);
 				}
 			}
-			for (unsigned int i = 0; i < import.constants.size(); i++) {
-				string name = import.constants[i];
+			for (unsigned int i = 0; i < import->constants.size(); i++) {
+				string name = import->constants[i];
 				if (name[0] == '_') continue; // Ignore artificially added constants
-				if (method == "*" || import.constants[i] == method) {
+				if (method == "*" || import->constants[i] == method) {
 					found = true;
 					string key = name;
 					if (i < aliasKeys.size()) key = aliasKeys[i];
-					file.constant_imports[key] = make_pair(&import, i);
+					file.constant_imports[key] = make_pair(import, i);
 				}
 			}
 			parse_validate(found, 0, "Could not find reference: " + importName);
@@ -145,8 +152,13 @@ void testTypes() {
 }
 
 int main(int argc, char **argv) {
+	define_std();
+
 	vector<OthFile> loadedFileList;
 	vector<string> loadedFileNameList;
+
+	loadedFileList.push_back(STANDARD_LIB);
+	loadedFileNameList.push_back(STANDARD_LIB.path);
 
 	OthFile seed;
 	parseAndResolveDependencies(seed, "test_var_reference.othsrc", loadedFileList, loadedFileNameList, "/");

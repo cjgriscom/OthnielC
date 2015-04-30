@@ -385,6 +385,7 @@ inline void testFB(OthFile &file, bool useResolvedTypes) {
 			" functions, " << file.variable_imports.size() <<
 			" variables, " << file.constant_imports.size() <<
 			" constants." << endl;
+
 	for (unsigned int i = 0; i < file.variables.size(); i++) {
 		cout << "variable <" << file.variables[i] << ":" << file.variable_types[i].asString();
 		if (file.variable_defaults[i].size() > 0) {

@@ -13,6 +13,7 @@
 #include <stack>
 #include <vector>
 #include <iostream>
+#include <StdLib.h>
 using namespace std;
 
 inline void resolveFunctionReferences(OthFile &file, Function &function);
@@ -60,6 +61,7 @@ static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &new
 
 static void findPotentialMatches(string name, uint32_t lineN, OthFile &local,
 		vector<OthFile *> &resolvedFiles, vector<uint32_t> &resolvedIndices) {
+
 	for (pair<string, pair<OthFile*,vector<uint32_t>>> p : local.function_imports) {
 		if (name == p.first) {
 			resolvedFiles.push_back(p.second.first);
@@ -228,8 +230,7 @@ inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> 
 	}
 }
 
-inline void resolveFunctionReferences(OthFile &file, Function &function) {
-	if (function.resolved) return; // TODO also check if it's already in the call stack (recursion) and kill static recursion
+inline void splitFunctionVars(Function &function) {
 	// Split up variables
 	for (unsigned int i = 0; i < function.variables.size(); i++) {
 		if (i < function.nInputs) {
@@ -240,6 +241,13 @@ inline void resolveFunctionReferences(OthFile &file, Function &function) {
 			function.r_aux.push_back(function.variable_types[i]);
 		}
 	}
+}
+
+inline void resolveFunctionReferences(OthFile &file, Function &function) {
+	if (function.resolved) return; // TODO also check if it's already in the call stack (recursion) and kill static recursion
+
+	splitFunctionVars(function);
+
 	callStack_res.push(&function);
 
 	vector<Call> newCallList;
