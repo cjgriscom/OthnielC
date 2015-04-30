@@ -136,6 +136,12 @@ static VarReference resolveVarReference(bool isInput, string name, uint32_t line
 	return VarReference();
 }
 
+static void setCallOutputs(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
+	for (unsigned int i = 0; i < oldCall.outParams.size(); i++) {
+
+	}
+}
+
 static void setCallInputs(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
 	for (unsigned int i = 0; i < oldCall.inParams.size(); i++) {
 		VarReference v = resolveVarReference(true, oldCall.inParams[i], oldCall.lineN, file, function, call, blockStack);
@@ -186,6 +192,7 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 			cn.type = evaluateDatatypeWithoutAbstracts(word, call.lineN, "Invalid DATATYPE node: " + word);
 		} else if (declaredMode == CONSTANT) {
 			cn.reference = resolveVarReference(false, word, call.lineN, file, function, call, blockStack);
+			cn.type = cn.reference.datatype();
 			parse_validate(cn.reference.isConstant(), call.lineN, "CONSTANT " + word + " does not reference a constant");
 		}
 		call.confNodes.push_back(cn);
@@ -213,6 +220,8 @@ inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> 
 		newCall.callReference = resolved[0].second;
 
 		defineConfNodes(file, function, blockStack, newCall, call);
+
+		setCallOutputs(file, function, blockStack, newCall, call);
 
 		blockStack.top()->push_back(newCall);
 	}
