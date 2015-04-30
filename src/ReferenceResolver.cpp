@@ -16,7 +16,7 @@
 using namespace std;
 
 inline void resolveFunctionReferences(OthFile &file, Function &function);
-inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> &callList, vector<Call> &newCallList, stack<vector<Call>*> &blockStack);
+inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> &callList, stack<vector<Call>*> &blockStack);
 
 static stack<Function*> callStack_res;
 
@@ -177,12 +177,14 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 			cn.reference = VarReference(&file, &function, refIndex);
 		} else {
 			if (declaredMode == CHAIN || declaredMode == SOUT_CHAIN) {
-				parseCallList(file, function, node, cn.calls, blockStack);
+				blockStack.push(&(cn.calls));
+				parseCallList(file, function, node, blockStack);
+				blockStack.pop();
 			} else {
 				parse_validate(isOneWord, call.lineN, "Configuration node is not a valid " + string(cn_kw(declaredMode)) + " expression");
 			}
 
-			if (call.callReference->confNode_types[i] == SOUT_CHAIN) {
+			if (declaredMode == SOUT_CHAIN) {
 				Call lastCall = cn.calls[cn.calls.size() - 1];
 				parse_validate(lastCall.outputs.size() == 1, lastCall.lineN, "Last call in an SOUT_CHAIN must have one output");
 				cn.type = lastCall.outputs[0].datatype(); // TODO this might be problematic (datatype, not satisfied datatype)
@@ -198,7 +200,7 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 	}
 }
 
-inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> &callList, vector<Call> &newCallList, stack<vector<Call>*> &blockStack) {
+inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> &callList, stack<vector<Call>*> &blockStack) {
 	for (ParsedCall &call : callList) {// TODO add built-in functions
 		string name = call.callName;
 		vector<OthFile *> resolvedFiles;
@@ -244,7 +246,7 @@ inline void resolveFunctionReferences(OthFile &file, Function &function) {
 	stack<vector<Call>*> blockStack;
 	blockStack.push(&newCallList);
 
-	parseCallList(file, function, function.callList, newCallList, blockStack);
+	parseCallList(file, function, function.callList, blockStack);
 
 	callStack_res.pop();
 	function.r_callList = newCallList;
