@@ -33,7 +33,6 @@ public:
 	bool isChain() {return mode == CHAIN;}
 	bool isSingleOutputChain() {return mode == SOUT_CHAIN;}
 	bool isConstant() {return mode == CONSTANT;}
-	VarReference getReference() {return reference;}
 	Datatype datatype() {return type;}
 };
 

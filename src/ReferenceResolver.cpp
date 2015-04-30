@@ -173,26 +173,26 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 
 		ConfNode cn = ConfNode(isReference, declaredMode);
 
-		if (!isReference) {
+		if (isReference) {
+			cn.reference = VarReference(&file, &function, refIndex);
+		} else {
 			if (declaredMode == CHAIN || declaredMode == SOUT_CHAIN) {
 				parseCallList(file, function, node, cn.calls, blockStack);
 			} else {
 				parse_validate(isOneWord, call.lineN, "Configuration node is not a valid " + string(cn_kw(declaredMode)) + " expression");
 			}
-		}
 
-		if (isReference) {
-			cn.reference = VarReference(&file, &function, refIndex);
-		} else if (call.callReference->confNode_types[i] == SOUT_CHAIN) {
-			Call lastCall = cn.calls[cn.calls.size() - 1];
-			parse_validate(lastCall.outputs.size() == 1, lastCall.lineN, "Last call in an SOUT_CHAIN must have one output");
-			cn.type = lastCall.outputs[0].datatype(); // TODO this might be problematic (datatype, not satisfied datatype)
-		} else if (declaredMode == DATATYPE) {
-			cn.type = evaluateDatatypeWithoutAbstracts(word, call.lineN, "Invalid DATATYPE node: " + word);
-		} else if (declaredMode == CONSTANT) {
-			cn.reference = resolveVarReference(false, 0, word, call.lineN, file, function, call, blockStack);
-			cn.type = cn.reference.datatype();
-			parse_validate(cn.reference.isConstant(), call.lineN, "CONSTANT " + word + " does not reference a constant");
+			if (call.callReference->confNode_types[i] == SOUT_CHAIN) {
+				Call lastCall = cn.calls[cn.calls.size() - 1];
+				parse_validate(lastCall.outputs.size() == 1, lastCall.lineN, "Last call in an SOUT_CHAIN must have one output");
+				cn.type = lastCall.outputs[0].datatype(); // TODO this might be problematic (datatype, not satisfied datatype)
+			} else if (declaredMode == DATATYPE) {
+				cn.type = evaluateDatatypeWithoutAbstracts(word, call.lineN, "Invalid DATATYPE node: " + word);
+			} else if (declaredMode == CONSTANT) {
+				cn.reference = resolveVarReference(false, 0, word, call.lineN, file, function, call, blockStack);
+				cn.type = cn.reference.datatype();
+				parse_validate(cn.reference.isConstant(), call.lineN, "CONSTANT " + word + " does not reference a constant");
+			}
 		}
 		call.confNodes.push_back(cn);
 	}
