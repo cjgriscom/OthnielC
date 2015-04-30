@@ -132,7 +132,7 @@ static VarReference resolveVarReference(bool isInput, uint32_t outindex, string 
 		}
 	}
 	// Create new output
-	return VarReference(name, &file, &function, self.callReference->r_outputs[outindex].nextSatisfiedType(self.input_types(), self.output_types(), lineN));
+	return VarReference(name, &file, &function, self.callReference->r_outputs[outindex].nextSatisfiedType(self.input_types(), self.confNode_types(), lineN));
 }
 
 static void setCallOutputs(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
@@ -187,7 +187,7 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 			if (declaredMode == SOUT_CHAIN) {
 				Call lastCall = cn.calls[cn.calls.size() - 1];
 				parse_validate(lastCall.outputs.size() == 1, lastCall.lineN, "Last call in an SOUT_CHAIN must have one output");
-				cn.type = lastCall.outputs[0].datatype(); // TODO this might be problematic (datatype, not satisfied datatype)
+				cn.type = lastCall.outputs[0].datatype();
 			} else if (declaredMode == DATATYPE) {
 				cn.type = evaluateDatatypeWithoutAbstracts(word, call.lineN, "Invalid DATATYPE node: " + word);
 			} else if (declaredMode == CONSTANT) {

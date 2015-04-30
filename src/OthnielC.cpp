@@ -151,7 +151,6 @@ int main(int argc, char **argv) {
 	OthFile seed;
 	parseAndResolveDependencies(seed, "test_var_reference.othsrc", loadedFileList, loadedFileNameList, "/");
 	OthFile * main = &loadedFileList[loadedFileList.size()-1]; // TODO bad assumption?
-	cout << " Last file : " << loadedFileNameList[loadedFileNameList.size()-1];
 	Function * mainFunction;
 	bool found = false;
 	for (Function &f : main->functionList) {
