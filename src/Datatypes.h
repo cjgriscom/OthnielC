@@ -103,6 +103,8 @@ public:
 	#define DT_COMPATIBLE   2  // Order: functionType.getCompatibilityValue(callType)
 	#define DT_EQUAL        3
 	uint32_t getCompatibilityValue(Datatype other) {
+		if (typeConstant == ANYTHING) return DT_COMPATIBLE;
+
 		if (typeConstant == ARRAY && other.typeConstant == ARRAY) {
 			return dimensions == other.dimensions ? types[0].getCompatibilityValue(other.types[0]) : DT_INCOMPATIBLE;
 		}
@@ -164,6 +166,7 @@ public:
 			} else if (typeConstant == TYPEOF) {
 				newType = call_input_types[self.varRefs[0]];
 			} else if (typeConstant == STRONGESTOF) {
+				// TODO we'll have to look at what the input types are
 				parse_validate(false, lineN, "strongestof() not yet implemented"); //TODO
 			} else if (typeConstant == NODE) {
 				newType = call_confNode_types[self.varRefs[0]];

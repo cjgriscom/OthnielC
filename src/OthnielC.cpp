@@ -119,10 +119,11 @@ void testTypes() {
 	Datatype string = Datatype(STRING);
 	Datatype numeric = Datatype(NUMERIC);
 	Datatype integer = Datatype(INTEGER);
+	Datatype anything = Datatype(ANYTHING);
 
 	printTest(Datatype(integer,1), Datatype(numeric,1));
 	printTest(Datatype(string,5), Datatype(string,1));
-	printTest(Datatype(BOOL), Datatype(BOOL));
+	printTest(Datatype(anything, 2), Datatype(Datatype(string, 1),2));
 	printTest(Datatype(BOOL), numeric);
 	printTest(numeric, string);
 	printTest(numeric, Datatype(I32));
