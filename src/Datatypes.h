@@ -34,10 +34,9 @@ const uint8_t NUMERIC  = 0xFE;
 const uint8_t ANYTHING = 0xFF;
 
 class Datatype {
-	Datatype * baseType = NULL;  // Array: Base type
 	int dimensions = 0;          // Array: Dimensions
 
-	vector<Datatype> types;      // Cluster: Array of types
+	vector<Datatype> types;      // Array: Base type, or Cluster: Array of types
 
 	vector<uint32_t> varRefs;    // strongestof, typeof, or node references
 
@@ -45,8 +44,8 @@ public:
 	uint8_t typeConstant = 0;
 
 	Datatype(uint8_t typeConstant) : typeConstant(typeConstant) {}
-	Datatype(Datatype * baseType, int dimensions) : typeConstant(ARRAY) {
-		this->baseType = baseType;
+	Datatype(Datatype baseType, int dimensions) : typeConstant(ARRAY) {
+		types.push_back(baseType);
 		this->dimensions = dimensions;
 	}
 	Datatype(int nTypes, vector<Datatype> baseTypes) : typeConstant(CLUSTER) {
@@ -75,14 +74,14 @@ public:
 
 	bool isAbstract() {
 		if (typeConstant == ARRAY) {
-			return (*baseType).isAbstract();
+			return types[0].isAbstract();
 		} else if (typeConstant == CLUSTER) {
 			for (unsigned int i = 0; i < types.size(); i++) {
 				if (types[i].isAbstract()) return true;
 			}
 			return false;
 		} else {
-			return typeConstant >= TYPEOF;
+			return typeConstant >= NODE;
 		}
 	}
 
@@ -92,7 +91,7 @@ public:
 	#define DT_EQUAL        3
 	uint32_t getCompatibilityValue(Datatype other) {
 		if (typeConstant == ARRAY && other.typeConstant == ARRAY) {
-			return dimensions == other.dimensions ? baseType->getCompatibilityValue(*(other.baseType)) : DT_INCOMPATIBLE;
+			return dimensions == other.dimensions ? types[0].getCompatibilityValue(other.types[0]) : DT_INCOMPATIBLE;
 		}
 		if (typeConstant == CLUSTER && other.typeConstant == CLUSTER) {
 			if (types.size() != other.types.size()) return DT_INCOMPATIBLE;
@@ -137,13 +136,30 @@ public:
 	}
 
 	Datatype nextSatisfiedType(vector<Datatype> call_input_types, vector<Datatype> call_confNode_types) {
-		//TODO
-		return *this;
+		Datatype self = *this;
+		Datatype newType = self;
+
+		if (isAbstract()) {
+			if (typeConstant == ARRAY) {
+
+			} else if (typeConstant == CLUSTER) {
+
+			} else if (typeConstant == TYPEOF) {
+				newType = call_input_types[self.varRefs[0]];
+			} else if (typeConstant == STRONGESTOF) {
+
+			} else if (typeConstant == NODE) {
+				newType = call_confNode_types[self.varRefs[0]];
+			} else if (typeConstant == ANYTHING || typeConstant == NUMERIC || typeConstant == INTEGER) {
+				//TODO outputs can't have anything, numeric, or integer definitions.  How to handle?
+			}
+		}
+		return newType;
 	}
 
 	string asString() {
 		if (typeConstant == ARRAY) {
-			return baseType->asString() + "(" + intToString(dimensions) + ")";
+			return types[0].asString() + "(" + intToString(dimensions) + ")";
 		} else if (typeConstant == CLUSTER){
 			return "CLUSTER"; //TODO
 		} else if (typeConstant == TYPEOF) {
