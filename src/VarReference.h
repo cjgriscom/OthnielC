@@ -99,9 +99,6 @@ public:
 	Call * callRef() {return call;}
 	uint32_t index() {return i;}
 	Datatype datatype() {return type;}
-	Datatype satisfiedDatatype(vector<Datatype> callInputs) { // Add the option of passing the call stack
-		//TODO
-	}
 };
 
 #endif /* VARREFERENCE_H_ */

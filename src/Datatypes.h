@@ -136,6 +136,11 @@ public:
 		return DT_INCOMPATIBLE;
 	}
 
+	Datatype nextSatisfiedType(vector<Datatype> call_input_types, vector<Datatype> call_confNode_types) {
+		//TODO
+		return this;
+	}
+
 	string asString() {
 		if (typeConstant == ARRAY) {
 			return baseType->asString() + "(" + intToString(dimensions) + ")";
