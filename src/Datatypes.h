@@ -150,6 +150,11 @@ public:
 		return DT_INCOMPATIBLE;
 	}
 
+	static Datatype getStrongestofCombination(vector<Datatype> inputTypes) {
+		parse_validate(false, 0, "strongestof() not yet implemented"); //TODO
+		return inputTypes[0];
+	}
+
 	Datatype nextSatisfiedType(vector<Datatype> call_input_types, vector<Datatype> call_confNode_types, uint32_t lineN) {
 		Datatype self = *this;
 		Datatype newType = self;
@@ -166,8 +171,7 @@ public:
 			} else if (typeConstant == TYPEOF) {
 				newType = call_input_types[self.varRefs[0]];
 			} else if (typeConstant == STRONGESTOF) {
-				// TODO we'll have to look at what the input types are
-				parse_validate(false, lineN, "strongestof() not yet implemented"); //TODO
+				return getStrongestofCombination(call_input_types);
 			} else if (typeConstant == NODE) {
 				newType = call_confNode_types[self.varRefs[0]];
 			}
