@@ -18,10 +18,10 @@ public:
 	vector<Call> calls; // Common to CHAIN and SOUT_CHAIN
 	VarReference reference; // Just CONSTANT
 
-	ConfNode(bool isFuncReference, uint8_t declaredMode, vector<Call> newCallList) :
+	ConfNode(bool isFuncReference, uint8_t declaredMode) :
 			mode(declaredMode),
-			isReference(isFuncReference),
-			calls(newCallList) {}
+			isReference(isFuncReference)
+			{}
 
 	bool isDeclaredReference() {return isReference;}
 	OthFile * declaredReferenceFile() {return reference.othFile();}

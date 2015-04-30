@@ -180,6 +180,6 @@ int main(int argc, char **argv) {
 		testFB(file, true);
 	}
 
-	testTypes();
+	//testTypes();
 
 }

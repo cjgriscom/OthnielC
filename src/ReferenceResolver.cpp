@@ -154,7 +154,6 @@ static void setCallInputs(OthFile &file, Function &function, stack<vector<Call>*
 static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
 	for (unsigned int i = 0; i < oldCall.confNodes.size(); i++) {
 		vector<ParsedCall> node = oldCall.confNodes[i];
-		vector<Call> newCallList;
 
 		string word = "";
 		bool isOneWord = node.size() == 1 && qualifiesAsKeyword_strict(node[0]);
@@ -172,20 +171,20 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 			}
 		}
 
+		ConfNode cn = ConfNode(isReference, declaredMode);
+
 		if (!isReference) {
 			if (declaredMode == CHAIN || declaredMode == SOUT_CHAIN) {
-				parseCallList(file, function, node, newCallList, blockStack);
+				parseCallList(file, function, node, cn.calls, blockStack);
 			} else {
 				parse_validate(isOneWord, call.lineN, "Configuration node is not a valid " + string(cn_kw(declaredMode)) + " expression");
 			}
 		}
 
-		ConfNode cn = ConfNode(isReference, declaredMode, newCallList);
-
 		if (isReference) {
 			cn.reference = VarReference(&file, &function, refIndex);
 		} else if (call.callReference->confNode_types[i] == SOUT_CHAIN) {
-			Call lastCall = newCallList[newCallList.size() - 1];
+			Call lastCall = cn.calls[cn.calls.size() - 1];
 			parse_validate(lastCall.outputs.size() == 1, lastCall.lineN, "Last call in an SOUT_CHAIN must have one output");
 			cn.type = lastCall.outputs[0].datatype(); // TODO this might be problematic (datatype, not satisfied datatype)
 		} else if (declaredMode == DATATYPE) {
