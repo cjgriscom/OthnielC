@@ -183,19 +183,19 @@ public:
 		if (typeConstant == ARRAY) {
 			return types[0].asString() + "(" + intToString(dimensions) + ")";
 		} else if (typeConstant == CLUSTER){
-			string expression = "(";
+			string expr = "(";
 			for (uint32_t i = 0; i < types.size(); i++) {
-				expression += types[i].asString();
-				if (i < types.size() - 1) expression += ", ";
+				if (i != 0) expr += ", ";
+				expr += types[i].asString();
 			}
-			return expression + ")";
+			return expr + ")";
 		} else if (typeConstant == TYPEOF) {
 			return "typeof(" + intToString(varRefs[0]) + ")";
 		} else if (typeConstant == NODE) {
 			return "node(" + intToString(varRefs[0]) + ")";
 		} else if (typeConstant == STRONGESTOF) {
 			string expr = "strongestof(";
-			for (unsigned int i = 0; i < varRefs.size(); i++) {
+			for (uint32_t i = 0; i < varRefs.size(); i++) {
 				if (i != 0) expr += ", ";
 				expr += intToString(varRefs[i]);
 			}
