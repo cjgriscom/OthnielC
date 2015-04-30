@@ -32,12 +32,6 @@ public:
 		return typeList;
 	}
 
-	vector<Datatype> output_types() {
-		vector<Datatype> typeList;
-		for (VarReference vr : inputs) typeList.push_back(vr.datatype());
-		return typeList;
-	}
-
 };
 
 #endif /* CALL_H_ */
