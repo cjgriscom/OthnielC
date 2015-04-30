@@ -67,8 +67,7 @@ static void findPotentialMatches(string name, uint32_t lineN, OthFile &local,
 		}
 	}
 	for (uint32_t i = 0; i < local.functionList.size(); i++) { // Load all local functions
-		Function f = local.functionList[i];
-		if (name == f.functionName) {
+		if (name == local.functionList[i].functionName) {
 			resolvedFiles.push_back(&local);
 			resolvedIndices.push_back(i);
 		}
@@ -249,6 +248,7 @@ inline void resolveFunctionReferences(OthFile &file, Function &function) {
 	parseCallList(file, function, function.callList, newCallList, blockStack);
 
 	callStack_res.pop();
+	function.r_callList = newCallList;
 	function.resolved = true;
 }
 

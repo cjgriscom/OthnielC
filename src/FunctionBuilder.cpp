@@ -324,6 +324,48 @@ static void printCallsFB(int indent, vector<ParsedCall> *calls, char delim) {
 		cout << delim;
 	}
 }
+static void printCallsResolved(int indent, vector<Call> &calls, char delim) {
+	for (Call &call : calls) {
+		if (call.isBlockEnd) {
+			indent--;
+		}
+		for (int ind = 0; ind < indent; ind++) {
+			cout << "  ";
+		}
+		if (call.isBlockEnd)
+			cout << ":";
+		cout << "[";
+		for (VarReference param : call.inputs) {
+			cout << param.datatype().asString() << " ";
+		}
+		cout << "]";
+		cout << call.callReference->functionName;
+		if (call.confNodes.size() > 0) {
+			cout << "{ ";
+			for (ConfNode &param : call.confNodes) {
+				if (param.isChain() || param.isSingleOutputChain()) {
+					printCallsResolved(0, param.calls, ' ');
+				} else if (param.isDatatype()) {
+					cout << param.type.asString();
+				} else {
+					cout << param.reference.name;
+				}
+			}
+			cout << "}";
+		}
+
+		cout << "[";
+		for (VarReference param : call.outputs) {
+			cout << param.datatype().asString() << " ";
+		}
+		cout << "]";
+		if (call.isBlockStart) {
+			indent++;
+			cout << ":";
+		}
+		cout << delim;
+	}
+}
 
 inline void printDeclaration(Function * fnctnRef) {
 	Function fn = *fnctnRef;
@@ -338,7 +380,7 @@ inline void printDeclaration(Function * fnctnRef) {
 	}
 }
 
-inline void testFB(OthFile &file) {
+inline void testFB(OthFile &file, bool useResolvedTypes) {
 	cout << "Imports: " << file.function_imports.size() <<
 			" functions, " << file.variable_imports.size() <<
 			" variables, " << file.constant_imports.size() <<
@@ -368,11 +410,15 @@ inline void testFB(OthFile &file) {
 		cout << "import{" << file.imports[i] << "}" << endl;
 	}
 	cout << endl;
-	for (Function fn : file.functionList) {
+	for (Function &fn : file.functionList) {
 		cout << mm_kw(fn.memoryMode) << " " << rm_kw(fn.runMode) << " ";
 		cout << fn.toString();
 		cout << endl;
-		printCallsFB(1, &(fn.callList), '\n');
+		if (useResolvedTypes && fn.resolved) {
+			printCallsResolved(1, fn.r_callList, '\n');
+		} else {
+			printCallsFB(1, &(fn.callList), '\n');
+		}
 	}
 }
 
