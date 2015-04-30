@@ -64,7 +64,8 @@ public:
 	// In/out/aux
 	VarReference(string name, OthFile * file, Function * function, uint32_t index) :
 			file(file),
-			func(function) {
+			func(function),
+			name(name) {
 		pair<uint8_t,uint32_t> p = vr_Construct_func(function, index, &type);
 		mode = p.first;
 		i = p.first;
@@ -75,7 +76,8 @@ public:
 			mode(VAR_NEW),
 			file(file),
 			func(function),
-			type(type) {}  // TODO these types might need to be satisfied
+			type(type),
+			name(name) {}
 
 	// ConfNode cheat constructor (internal)
 	VarReference(OthFile * file, Function * function, uint32_t index) :
