@@ -174,6 +174,7 @@ public:
 				return getStrongestofCombination(call_input_types);
 			} else if (typeConstant == NODE) {
 				newType = call_confNode_types[self.varRefs[0]];
+				parse_validate(!newType.isAbstract(), lineN, "ConfNode reference does not name a valid datatype");
 			}
 		}
 		return newType;

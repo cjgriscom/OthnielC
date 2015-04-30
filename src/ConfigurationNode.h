@@ -14,7 +14,7 @@ class ConfNode {
 	bool isReference;
 
 public:
-	Datatype type = Datatype(BOOL); // Common to all but CHAIN
+	Datatype type = Datatype(ANYTHING); // Common to all but CHAIN
 	vector<Call> calls; // Common to CHAIN and SOUT_CHAIN
 	VarReference reference; // Just CONSTANT
 
