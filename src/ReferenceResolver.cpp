@@ -96,12 +96,12 @@ static VarReference resolveVarReference(bool isInput, uint32_t outindex, string 
 	if (file.variable_imports.find(name) == file.variable_imports.end() ) { // Search local variables
 		for (unsigned int i = 0; i < file.variables.size(); i++) {
 			if (name == file.variables[i]) {
-				return VarReference(name, true, &file, i);
+				return VarReference(name, false, &file, i);
 			}
 		}
 	} else { // Search imports
 		pair<OthFile*,uint32_t> p = file.variable_imports[name];
-		return VarReference(name, true, p.first, p.second);
+		return VarReference(name, false, p.first, p.second);
 	}
 
 	// Function in/out/aux

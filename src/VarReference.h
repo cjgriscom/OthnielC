@@ -50,7 +50,7 @@ public:
 			func(function),
 			call(callRef),
 			i(index),
-			type(type), // TODO these types might need to be satisfied
+			type(type),
 			name(name) {}
 
 	// Constant OR Variable
