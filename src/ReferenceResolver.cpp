@@ -69,8 +69,8 @@ static void findPotentialMatches(string name, uint32_t lineN, OthFile &local,
 
 	for (pair<string, pair<OthFile*,vector<uint32_t>>> p : local.function_imports) {
 		if (name == p.first) {
-			resolvedFiles.push_back(p.second.first);
 			resolvedIndices = p.second.second;
+			for (uint32_t i = 0; i < resolvedIndices.size(); i++) resolvedFiles.push_back(p.second.first);
 		}
 	}
 	for (uint32_t i = 0; i < local.functionList.size(); i++) { // Load all local functions
