@@ -100,7 +100,7 @@ void parseAndResolveDependencies(
 			}
 			for (unsigned int i = 0; i < import->constants.size(); i++) {
 				string name = import->constants[i];
-				if (name[0] == '_') continue; // Ignore artificially added constants
+				if (importName != "STD_LIB" && name[0] == '_') continue; // Ignore artificially added constants
 				if (method == "*" || import->constants[i] == method) {
 					found = true;
 					string key = name;
