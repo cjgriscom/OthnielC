@@ -40,7 +40,12 @@ static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &new
 			bool valid = true;
 			bool hasIncompat = false;
 			for (unsigned int inp = 0; inp < call.inParams.size(); inp++) {
-				uint8_t cv = f->r_inputs[inp].getCompatibilityValue(newCall.inputs[inp].datatype());
+				Datatype d = f->r_inputs[inp];
+				parse_validate(d.typeConstant != NODE && d.typeConstant != STRONGESTOF, f->lineN, "Node and strongestof expressions not allowed in inputs");
+				if (d.typeConstant == TYPEOF) {
+					d = newCall.inputs[d.varRefs[0]].datatype();
+				}
+				uint8_t cv = d.getCompatibilityValue(newCall.inputs[inp].datatype());
 				if (cv <= DT_CASTABLE) {
 					valid = false;
 					if (cv == DT_INCOMPATIBLE) hasIncompat = true;

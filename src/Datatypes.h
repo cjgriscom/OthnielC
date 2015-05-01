@@ -37,10 +37,8 @@ class Datatype {
 	int dimensions = 0;          // Array: Dimensions
 
 	vector<Datatype> types;      // Array: Base type, or Cluster: Array of types
-
-	vector<uint32_t> varRefs;    // strongestof, typeof, or node references
-
 public:
+	vector<uint32_t> varRefs;    // strongestof, typeof, or node references
 	uint8_t typeConstant = 0;
 
 	Datatype(uint8_t typeConstant) : typeConstant(typeConstant) {}
