@@ -148,28 +148,52 @@ public:
 		return DT_INCOMPATIBLE;
 	}
 
-	static Datatype getStrongestofCombination(vector<Datatype> inputTypes) {
-		parse_validate(false, 0, "strongestof() not yet implemented"); //TODO
-		return inputTypes[0];
+	static Datatype getStrongestofCombination(vector<Datatype> inputTypes, uint32_t lineN) {
+		if (inputTypes[0].typeConstant == ARRAY) {
+			vector<Datatype> innerTypes;
+			for (Datatype arr : inputTypes) innerTypes.push_back(arr.types[0]);
+			return Datatype(getStrongestofCombination(innerTypes, lineN), inputTypes[0].dimensions);
+		} else if (inputTypes[0].typeConstant == CLUSTER) {
+			//TODO
+			return inputTypes[0];
+		} else {
+			Datatype strongest = inputTypes[0];
+			for (uint32_t i = 1; i < inputTypes.size(); i++) {
+				parse_validate(strongest.getCompatibilityValue(inputTypes[i]) >= DT_CASTABLE &&
+						inputTypes[i].getCompatibilityValue(strongest) >= DT_CASTABLE,
+						lineN,
+						"Incompatible types specified for strongestof() expression");
+				if (inputTypes[i].typeConstant > strongest.typeConstant) strongest = inputTypes[i];
+			}
+			return strongest;
+		}
 	}
 
-	Datatype nextSatisfiedType(vector<Datatype> call_input_types, vector<Datatype> call_confNode_types, uint32_t lineN) {
+	Datatype nextSatisfiedType(vector<Datatype> func_input_types, vector<Datatype> call_input_types, vector<Datatype> call_confNode_types, uint32_t declLine, uint32_t lineN) {
 		Datatype self = *this;
 		Datatype newType = self;
 
 		if (isAbstract()) {
 			if (typeConstant == ARRAY) {
-				return Datatype(self.types[0].nextSatisfiedType(call_input_types, call_confNode_types, lineN), self.dimensions);
+				return Datatype(self.types[0].nextSatisfiedType(func_input_types, call_input_types, call_confNode_types, declLine, lineN), self.dimensions);
 			} else if (typeConstant == CLUSTER) {
 				vector<Datatype> baseTypes;
 				for (Datatype &ref : self.types) {
-					baseTypes.push_back(ref.nextSatisfiedType(call_input_types, call_confNode_types, lineN));
+					baseTypes.push_back(ref.nextSatisfiedType(func_input_types, call_input_types, call_confNode_types, declLine, lineN));
 				}
 				return Datatype(baseTypes.size(), baseTypes);
 			} else if (typeConstant == TYPEOF) {
 				newType = call_input_types[self.varRefs[0]];
+				parse_validate(!func_input_types[self.varRefs[0]].isAbstract() || func_input_types[self.varRefs[0]].isIndependantAbstract(), declLine, "A typeof() expression must reference a concrete or independent abstract type");
 			} else if (typeConstant == STRONGESTOF) {
-				return getStrongestofCombination(call_input_types);
+				vector<Datatype> callTypes;
+				vector<Datatype> funcTypes;
+				for (uint32_t reference : self.varRefs) {
+					callTypes.push_back(call_input_types[reference]);
+					funcTypes.push_back(func_input_types[reference]);
+				}
+				for (Datatype check : funcTypes) parse_validate(!check.isAbstract() || check.isIndependantAbstract(), declLine, "A strongestof() expression must reference concrete or independent abstract types");
+				newType = getStrongestofCombination(callTypes, lineN);
 			} else if (typeConstant == NODE) {
 				newType = call_confNode_types[self.varRefs[0]];
 				parse_validate(!newType.isAbstract(), lineN, "ConfNode reference does not name a valid datatype");

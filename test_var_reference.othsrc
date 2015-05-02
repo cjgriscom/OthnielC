@@ -3,14 +3,18 @@ constant <xyz:I32=33>
 
 static sequence main
 	
-	//[5,5]addAndExecute{[6.6,6.6]/[out]}[p]
-	[var, 5]+[d0]
-	//[4,xyz]+[i0]
-	//[d0,i0]-[d1]
+	[5,5]addAndExecute{[6.6,6]/[out]}[p]
+	[var, 5]-[d0]
+	[4,xyz]^[i0]
+	[d0,i0,var]add[d1]
 	
-simple sequence [a:numeric, b:numeric, c:numeric]add[d:strongestof(a,b,c)]
-	[a,b]add[>] [<,c]add[d]
+	[5, 234]nand[l]
+	
+simple sequence [a:numeric, b:I32, c:numeric]add[d:strongestof(a,b,c)]
+	[a,b]+[>] [<,c]+[d]
 inline sequence [a:numeric, b:numeric, c:numeric]addAndExecute{stuff:CHAIN}[d:strongestof(a,b,c)]
 	[a,b]addAndExecute{stuff}[>] [<, c]add[d]
 inline sequence [a:numeric, b:numeric]addAndExecute{stuff:SOUT_CHAIN}[d:node(stuff)]
 	
+inline sequence [a:integer, b:typeof(a)]nand[c:typeof(a)]
+	//[a,b]&[>]![c]
