@@ -39,6 +39,8 @@ class Datatype {
 	vector<Datatype> types;      // Array: Base type, or Cluster: Array of types
 public:
 	vector<uint32_t> varRefs;    // strongestof, typeof, or node references
+	uint32_t refIndex0() {return varRefs[0];} // For typeof
+
 	uint8_t typeConstant = 0;
 
 	Datatype(uint8_t typeConstant) : typeConstant(typeConstant) {}
@@ -54,6 +56,30 @@ public:
 	}
 	Datatype(vector<uint32_t> variables) : typeConstant(STRONGESTOF) {
 		varRefs = variables;
+	}
+
+	bool equals(Datatype dt2) {
+		if (typeConstant == dt2.typeConstant) {
+			if (typeConstant == TYPEOF || typeConstant == NODE || typeConstant == STRONGESTOF) {
+				return varRefs == dt2.varRefs;
+			} else if (typeConstant == ARRAY || typeConstant == CLUSTER) {
+				if (dimensions != dt2.dimensions || types.size() != dt2.types.size()) return false;
+				for (uint32_t i = 0; i < types.size(); i++) {
+					if (!types[i].equals(dt2.types[i])) return false;
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+
+	// Abstractly evaluate a typeof() reference in inputs for the purpose of evaluating a strongestof() of typeof() expression
+	Datatype localDereference(vector<Datatype> func_input_types) {
+		if (typeConstant == TYPEOF) {
+			return func_input_types[refIndex0()];
+		} else {
+			return *this;
+		}
 	}
 
 	bool isSigned() {
@@ -148,22 +174,23 @@ public:
 		return DT_INCOMPATIBLE;
 	}
 
-	static Datatype getStrongestofCombination(vector<Datatype> inputTypes, uint32_t lineN) {
+	static Datatype getStrongestofCombination(vector<Datatype> func_input_types, vector<Datatype> inputTypes, uint32_t lineN) {
 		if (inputTypes[0].typeConstant == ARRAY) {
 			vector<Datatype> innerTypes;
 			for (Datatype arr : inputTypes) innerTypes.push_back(arr.types[0]);
-			return Datatype(getStrongestofCombination(innerTypes, lineN), inputTypes[0].dimensions);
+			return Datatype(getStrongestofCombination(func_input_types, innerTypes, lineN), inputTypes[0].dimensions);
 		} else if (inputTypes[0].typeConstant == CLUSTER) {
 			//TODO
 			return inputTypes[0];
 		} else {
-			Datatype strongest = inputTypes[0];
+			Datatype strongest = inputTypes[0].localDereference(func_input_types);
 			for (uint32_t i = 1; i < inputTypes.size(); i++) {
+				Datatype newType = inputTypes[i].localDereference(func_input_types);
 				parse_validate(strongest.getCompatibilityValue(inputTypes[i]) >= DT_CASTABLE &&
-						inputTypes[i].getCompatibilityValue(strongest) >= DT_CASTABLE,
+						newType.getCompatibilityValue(strongest) >= DT_CASTABLE,
 						lineN,
 						"Incompatible types specified for strongestof() expression");
-				if (inputTypes[i].typeConstant > strongest.typeConstant) strongest = inputTypes[i];
+				if (newType.typeConstant > strongest.typeConstant) strongest = newType;
 			}
 			return strongest;
 		}
@@ -183,8 +210,9 @@ public:
 				}
 				return Datatype(baseTypes.size(), baseTypes);
 			} else if (typeConstant == TYPEOF) {
-				newType = call_input_types[self.varRefs[0]];
-				parse_validate(!func_input_types[self.varRefs[0]].isAbstract() || func_input_types[self.varRefs[0]].isIndependantAbstract(), declLine, "A typeof() expression must reference a concrete or independent abstract type");
+				newType = call_input_types[self.refIndex0()];
+				cout << self.asString() << " vs " << newType.asString() << endl; //XXX
+				parse_validate(!func_input_types[self.refIndex0()].isAbstract() || func_input_types[self.refIndex0()].isIndependantAbstract(), declLine, "A typeof() expression must reference a concrete or independent abstract type");
 			} else if (typeConstant == STRONGESTOF) {
 				vector<Datatype> callTypes;
 				vector<Datatype> funcTypes;
@@ -193,9 +221,9 @@ public:
 					funcTypes.push_back(func_input_types[reference]);
 				}
 				for (Datatype check : funcTypes) parse_validate(!check.isAbstract() || check.isIndependantAbstract(), declLine, "A strongestof() expression must reference concrete or independent abstract types");
-				newType = getStrongestofCombination(callTypes, lineN);
+				newType = getStrongestofCombination(func_input_types, callTypes, lineN);
 			} else if (typeConstant == NODE) {
-				newType = call_confNode_types[self.varRefs[0]];
+				newType = call_confNode_types[self.refIndex0()];
 				parse_validate(!newType.isAbstract(), lineN, "ConfNode reference does not name a valid datatype");
 			}
 		}
@@ -213,9 +241,9 @@ public:
 			}
 			return expr + ")";
 		} else if (typeConstant == TYPEOF) {
-			return "typeof(" + intToString(varRefs[0]) + ")";
+			return "typeof(" + intToString(refIndex0()) + ")";
 		} else if (typeConstant == NODE) {
-			return "node(" + intToString(varRefs[0]) + ")";
+			return "node(" + intToString(refIndex0()) + ")";
 		} else if (typeConstant == STRONGESTOF) {
 			string expr = "strongestof(";
 			for (uint32_t i = 0; i < varRefs.size(); i++) {
