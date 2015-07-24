@@ -43,6 +43,8 @@ public:
 
 	uint8_t typeConstant = 0;
 
+	int32_t tag = -1; // For typeof replacement
+
 	Datatype(uint8_t typeConstant) : typeConstant(typeConstant) {}
 	Datatype(Datatype baseType, int dimensions) : typeConstant(ARRAY) {
 		types.push_back(baseType);
@@ -59,7 +61,7 @@ public:
 	}
 
 	bool equals(Datatype dt2) {
-		if (typeConstant == dt2.typeConstant) {
+		if (typeConstant == dt2.typeConstant && tag == dt2.tag) {
 			if (typeConstant == TYPEOF || typeConstant == NODE || typeConstant == STRONGESTOF) {
 				return varRefs == dt2.varRefs;
 			} else if (typeConstant == ARRAY || typeConstant == CLUSTER) {
@@ -122,6 +124,45 @@ public:
 		}
 	}
 
+	// See OthNotes 3May2015
+	bool isTypeOf(
+			vector<Datatype> topL_func_ins, // The owning function
+			vector<Datatype> call_ins,      // The call in question
+			vector<Datatype> reference_func_ins, // The function which the call references
+			Datatype callType,
+			uint32_t callType_index_if_inputref) {
+
+		cout << asString() << " vs2 " << callType.asString() << endl; //XXX
+
+		if (typeConstant == TYPEOF && callType.typeConstant == TYPEOF) { // Case 2, 3
+			// These need to reference the same origin for which the expression is being evaluated
+			Datatype localReference = call_ins[callType.refIndex0()];
+			if (localReference.typeConstant == TYPEOF) { // Then they must refer to the same origin index
+				return localReference.refIndex0() == refIndex0(); // Check if the origin references are equal
+			} else if (!localReference.isAbstract()) { // it's dereference refers to a concrete type
+				//return localReference.typeConstant == ;
+			}
+		} else if (typeConstant == TYPEOF) {
+			// Check if the two concrete call types are identical
+			if (callType.equals(call_ins[refIndex0()])) {
+				return true;
+			} else {
+				// OthNotes Case 3
+				if (call_ins[refIndex0()].typeConstant == TYPEOF) {
+					if (callType_index_if_inputref == call_ins[refIndex0()].refIndex0()) return true;
+				}
+				return false;
+			}
+		} else if (callType.typeConstant == TYPEOF) { // Case 1, 4
+			// The call in question references it's own function's inputs
+			// TODO I think in these case only a dereference is needed
+			//return callType.localDereference(reference_func_ins) == *this;
+		}
+
+		// No typeof
+		return false;
+	}
+
 	#define DT_INCOMPATIBLE 0
 	#define DT_CASTABLE     1  // Order: functionType.getCompatibilityValue(callType)
 	#define DT_COMPATIBLE   2  // Order: functionType.getCompatibilityValue(callType)
@@ -142,7 +183,7 @@ public:
 			return minValue;
 		}
 
-		if (typeConstant == other.typeConstant) return DT_EQUAL;
+		if (equals(other)) return DT_EQUAL;
 
 		if ((typeConstant == NUMERIC || typeConstant == F80) && other.isNumeric(true)) return DT_COMPATIBLE;
 		if (typeConstant == INTEGER && other.isInteger(true)) return DT_COMPATIBLE;

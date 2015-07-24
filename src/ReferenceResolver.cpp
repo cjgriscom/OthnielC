@@ -21,7 +21,7 @@ inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> 
 
 static stack<Function*> callStack_res;
 
-static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &newList, uint32_t lineN, OthFile &local,
+static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &newList, uint32_t lineN, OthFile &local, Function &topL_func,
 		ParsedCall &call, Call &newCall, vector<OthFile *> &resolvedFiles, vector<uint32_t> &resolvedIndices) {
 
 	bool isCastable = false;
@@ -46,7 +46,8 @@ static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &new
 					d = newCall.inputs[d.varRefs[0]].datatype();
 				}
 				uint8_t cv = d.getCompatibilityValue(newCall.inputs[inp].datatype());
-				if (cv <= DT_CASTABLE) {
+				uint32_t callType_index_if_inputref = newCall.inputs[inp].isF_In() ? newCall.inputs[inp].index() : -1;
+				if (cv <= DT_CASTABLE && !d.isTypeOf(topL_func.r_inputs, newCall.input_types(), f->r_inputs, newCall.inputs[inp].datatype(), callType_index_if_inputref)) {
 					valid = false;
 					if (cv == DT_INCOMPATIBLE) hasIncompat = true;
 				}
@@ -145,6 +146,7 @@ static VarReference resolveVarReference(bool isInput, uint32_t outindex, string 
 static void setCallOutputs(OthFile &file, Function &function, stack<vector<Call>*> &blockStack, Call &call, ParsedCall &oldCall) {
 	for (unsigned int i = 0; i < oldCall.outParams.size(); i++) {
 		VarReference v = resolveVarReference(false, i, oldCall.outParams[i], oldCall.lineN, file, function, call, blockStack);
+		//TODO validate type
 		call.outputs.push_back(v);
 	}
 }
@@ -208,7 +210,7 @@ static void defineConfNodes(OthFile &file, Function &function, stack<vector<Call
 }
 
 inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> &callList, stack<vector<Call>*> &blockStack) {
-	for (ParsedCall &call : callList) {// TODO add built-in functions
+	for (ParsedCall &call : callList) {
 		string name = call.callName;
 		vector<OthFile *> resolvedFiles;
 		vector<uint32_t> resolvedIndices;
@@ -222,7 +224,7 @@ inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> 
 		findPotentialMatches(name, call.lineN, file, resolvedFiles, resolvedIndices);
 
 		vector<pair<OthFile*,Function*>> resolved;
-		pairAndEliminateBasicConflicts(resolved, call.lineN, file, call, newCall, resolvedFiles, resolvedIndices);
+		pairAndEliminateBasicConflicts(resolved, call.lineN, file, function, call, newCall, resolvedFiles, resolvedIndices);
 
 		parse_validate(resolved.size() == 1, call.lineN, "Ambiguous reference (multiple matches) for call " + call.callName);
 		newCall.callReference = resolved[0].second;
@@ -235,7 +237,7 @@ inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> 
 	}
 }
 
-inline void splitFunctionVars(Function &function) {
+inline void splitFunctionVarsAndAddTags(Function &function) {
 	// Split up variables
 	for (unsigned int i = 0; i < function.variables.size(); i++) {
 		if (i < function.nInputs) {
@@ -245,13 +247,19 @@ inline void splitFunctionVars(Function &function) {
 		} else {
 			function.r_aux.push_back(function.variable_types[i]);
 		}
+		if (function.variable_types[i].typeConstant == TYPEOF) { // We need to tag typeofs or anything referenced by them
+			uint32_t ref = function.variable_types[i].refIndex0();
+			function.variable_types[i].tag = ref;   // Tag this one
+			function.variable_types[ref].tag = ref; // Tag the reference
+
+		}
 	}
 }
 
 inline void resolveFunctionReferences(OthFile &file, Function &function) {
 	if (function.resolved) return; // TODO also check if it's already in the call stack (recursion) and kill static recursion
 
-	splitFunctionVars(function);
+	splitFunctionVarsAndAddTags(function);
 
 	callStack_res.push(&function);
 

@@ -13,7 +13,7 @@
 using namespace std;
 
 static OthFile STANDARD_LIB = OthFile();
-static void splitFunctionVars(Function &f);
+static void splitFunctionVarsAndAddTags(Function &f);
 
 inline void define_std() {
 	STANDARD_LIB.path = "STD_LIB";
@@ -52,7 +52,7 @@ simple sequence [a:integer]![b:typeof(a)]
 	parse();
 	assembleFile(STANDARD_LIB, finalCalls);
 	for (Function &f : STANDARD_LIB.functionList) {
-		splitFunctionVars(f);
+		splitFunctionVarsAndAddTags(f);
 		f.resolved = true;
 	}
 
