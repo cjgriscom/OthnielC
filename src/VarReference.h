@@ -68,7 +68,7 @@ public:
 			name(name) {
 		pair<uint8_t,uint32_t> p = vr_Construct_func(function, index, &type);
 		mode = p.first;
-		i = p.first;
+		i = p.second;
 	}
 
 	// New
