@@ -28,7 +28,7 @@ static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &new
 	Function *castf = NULL;
 
 	for (unsigned int i = 0; i < resolvedFiles.size(); i++) {
-		Function *f = &(resolvedFiles[i]->functionList[resolvedIndices[i]]);
+		Function *f = &(resolvedFiles[i]->functionList[resolvedIndices[i]]); // f is the "remote" function
 		if (f->nInputs == call.inParams.size() &&
 				f->nOutputs == call.outParams.size() &&
 				f->confNodes.size() == call.confNodes.size()) { // Verify arg lengths
@@ -43,11 +43,11 @@ static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &new
 				Datatype d = f->r_inputs[inp];
 				parse_validate(d.typeConstant != NODE && d.typeConstant != STRONGESTOF, f->lineN, "Node and strongestof expressions not allowed in inputs");
 				if (d.typeConstant == TYPEOF) {
-					d = newCall.inputs[d.varRefs[0]].datatype();
+					d = newCall.inputs[d.refIndex0()].datatype();
 				}
 				uint8_t cv = d.getCompatibilityValue(newCall.inputs[inp].datatype());
-				uint32_t callType_index_if_inputref = newCall.inputs[inp].isF_In() ? newCall.inputs[inp].index() : -1;
-				if (cv <= DT_CASTABLE && !d.isTypeOf(topL_func.r_inputs, newCall.input_types(), f->r_inputs, newCall.inputs[inp].datatype(), callType_index_if_inputref)) {
+				int32_t callType_index_if_inputref = newCall.inputs[inp].isF_In() ? newCall.inputs[inp].index() : -1;
+				if (cv <= DT_CASTABLE && !(f->r_inputs[inp]).isTypeOf(topL_func.r_inputs, newCall.input_types(), f->r_inputs, newCall.inputs[inp].datatype(), callType_index_if_inputref)) {
 					valid = false;
 					if (cv == DT_INCOMPATIBLE) hasIncompat = true;
 				}
@@ -238,6 +238,15 @@ inline void parseCallList(OthFile &file, Function &function, vector<ParsedCall> 
 }
 
 inline void splitFunctionVarsAndAddTags(Function &function) {
+	// Add tags
+	for (unsigned int i = 0; i < function.variables.size(); i++) {
+		if (function.variable_types[i].typeConstant == TYPEOF) { // We need to tag typeofs or anything referenced by them
+			uint32_t ref = function.variable_types[i].refIndex0();
+			function.variable_types[i].tag = ref;   // Tag this one
+			function.variable_types[ref].tag = ref; // Tag the reference
+		}
+	}
+
 	// Split up variables
 	for (unsigned int i = 0; i < function.variables.size(); i++) {
 		if (i < function.nInputs) {
@@ -247,12 +256,7 @@ inline void splitFunctionVarsAndAddTags(Function &function) {
 		} else {
 			function.r_aux.push_back(function.variable_types[i]);
 		}
-		if (function.variable_types[i].typeConstant == TYPEOF) { // We need to tag typeofs or anything referenced by them
-			uint32_t ref = function.variable_types[i].refIndex0();
-			function.variable_types[i].tag = ref;   // Tag this one
-			function.variable_types[ref].tag = ref; // Tag the reference
 
-		}
 	}
 }
 

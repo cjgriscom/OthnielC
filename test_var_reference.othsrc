@@ -1,8 +1,16 @@
 variable <var:F64=192.234>
 constant <xyz:I32=33>
 
+inline sequence [v1:numeric, v2:typeof(v1)]minmax[min:typeof(v1), max:typeof(v1)]
+	[false, v1,v2]min[min]
+	[v2,v1]max[max]
+
+inline sequence [fg:boolean, v1:numeric, v2:typeof(v1)]min[min:typeof(v1)]
+inline sequence [v1:numeric, v2:typeof(v1)]max[max:typeof(v1)]
+
 static sequence main
 	
+	[6,23]minmax[min, max]
 	[5,5]addAndExecute{[6.6,6]/[out]}[p]
 	[var, 5]-[d0]
 	[4,xyz]^[i0]
@@ -17,4 +25,4 @@ inline sequence [a:numeric, b:numeric, c:numeric]addAndExecute{stuff:CHAIN}[d:st
 inline sequence [a:numeric, b:numeric]addAndExecute{stuff:SOUT_CHAIN}[d:node(stuff)]
 	
 inline sequence [a:integer, b:typeof(a)]nand[c:typeof(a)]
-	//[a,b]&[>]![c]
+	[a,b]&[>]![c]

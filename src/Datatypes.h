@@ -61,9 +61,10 @@ public:
 	}
 
 	bool equals(Datatype dt2) {
-		if (typeConstant == dt2.typeConstant && tag == dt2.tag) {
-			if (typeConstant == TYPEOF || typeConstant == NODE || typeConstant == STRONGESTOF) {
-				return varRefs == dt2.varRefs;
+		if (typeConstant == dt2.typeConstant) {
+			if (tag > -1 && tag == dt2.tag) return true; // typeofs
+			if (typeConstant == NODE || typeConstant == STRONGESTOF) {
+				return varRefs == dt2.varRefs; // XXX is this safe?
 			} else if (typeConstant == ARRAY || typeConstant == CLUSTER) {
 				if (dimensions != dt2.dimensions || types.size() != dt2.types.size()) return false;
 				for (uint32_t i = 0; i < types.size(); i++) {
@@ -71,6 +72,7 @@ public:
 				}
 				return true;
 			}
+			return true;
 		}
 		return false;
 	}
@@ -124,7 +126,30 @@ public:
 		}
 	}
 
-	// See OthNotes 3May2015
+	// See OthNotes 10Jul2015
+	bool isTypeOf(
+			vector<Datatype> owner,  // The owning function's inputs
+			vector<Datatype> call,   // The call in question (inputs)
+			vector<Datatype> remote, // The function which the call references (inputs)
+			Datatype callType,
+			int32_t callType_index_if_inputref) {
+		// 'this' is remote
+		// Call references owner
+		// Remote reference remote
+		if (tag == -1) return false;
+		cout << callType_index_if_inputref << ": " << tag << "/" << callType.tag << endl;
+		if (callType.tag == -1) { // Concrete comparison; might need autocasting *eyeroll* TODO
+			// It can't be a typeof at this point
+			if (callType.isIndependantAbstract()) return false; // we don't like these? TODO
+			return callType.equals(call[tag]); // Currently node and strongestof are handled here
+		} else { // typeof in owner vars comparison
+			return callType.tag == call[tag].tag;
+		}
+
+		return false;
+	}
+
+	/*/ See OthNotes 3May2015
 	bool isTypeOf(
 			vector<Datatype> topL_func_ins, // The owning function
 			vector<Datatype> call_ins,      // The call in question
@@ -161,7 +186,7 @@ public:
 
 		// No typeof
 		return false;
-	}
+	}*/
 
 	#define DT_INCOMPATIBLE 0
 	#define DT_CASTABLE     1  // Order: functionType.getCompatibilityValue(callType)
