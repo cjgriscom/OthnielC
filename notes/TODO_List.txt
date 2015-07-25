@@ -1,0 +1,24 @@
+Constant Parser:
+Make sure to validate const names
+First check all pipes and vars for constant references, then check if they are constants and make links
+
+Variable reference: _variable_ID
+
+*_* indicates what??
+Booleans: _true, _false
+Block scope: _fwd_*_*
+Block scope: _blk_nestdepth_name
+Local constant: _constant_*_*
+
+// Convert directories like "/othtest/functions/something:var" to "_othtest_functions_something_var"
+Variable renaming scheme: _variable_path_name
+Constant renaming scheme: _constant_path_name
+Function renaming scheme: _function_path_name
+
+TODO: Validate compound block outputs
+TODO: 
+
+// The compiler should replace all directories after finding the top-level directory.
+// can't make ../ references past /
+// / references the top level directory.
+// This way we can have pseudo-packages like /QuirkyGaming/othniel and /Microsoft/windowsAPI
