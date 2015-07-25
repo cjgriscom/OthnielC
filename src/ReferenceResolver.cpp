@@ -42,9 +42,9 @@ static void pairAndEliminateBasicConflicts(vector<pair<OthFile*,Function*>> &new
 			for (unsigned int inp = 0; inp < call.inParams.size(); inp++) {
 				Datatype d = f->r_inputs[inp];
 				parse_validate(d.typeConstant != NODE && d.typeConstant != STRONGESTOF, f->lineN, "Node and strongestof expressions not allowed in inputs");
-				if (d.typeConstant == TYPEOF) {
+				/*if (d.typeConstant == TYPEOF) {
 					d = newCall.inputs[d.refIndex0()].datatype();
-				}
+				}*/// TODO This piece of code actually does a one way autocast... might want it later
 				uint8_t cv = d.getCompatibilityValue(newCall.inputs[inp].datatype());
 				int32_t callType_index_if_inputref = newCall.inputs[inp].isF_In() ? newCall.inputs[inp].index() : -1;
 				if (cv <= DT_CASTABLE && !(f->r_inputs[inp]).isTypeOf(topL_func.r_inputs, newCall.input_types(), f->r_inputs, newCall.inputs[inp].datatype(), callType_index_if_inputref)) {
