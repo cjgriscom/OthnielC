@@ -85,12 +85,7 @@ static pair<uint8_t,uint32_t> vr_Construct_func(Function * func, uint32_t index,
 	if (index < func->nInputs) {
 		mode = VAR_IN;
 		i = index;
-
-		if (func->r_inputs[i].isIndependantAbstract()) { // References an independent abstract; dependent on call input type
-			*type = Datatype(index, false);
-		} else {
-			*type = func->r_inputs[i];
-		}
+		*type = func->r_inputs[i];
 	} else if (index < func->nInputs + func->nOutputs) {
 		mode = VAR_OUT;
 		i = index - func->nInputs;
