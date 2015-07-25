@@ -137,7 +137,6 @@ public:
 		// Call references owner
 		// Remote reference remote
 		if (tag == -1) return false;
-		cout << callType_index_if_inputref << ": " << tag << "/" << callType.tag << endl;
 		if (callType.tag == -1) { // Concrete comparison; might need autocasting *eyeroll* TODO
 			// It can't be a typeof at this point
 			if (callType.isIndependantAbstract()) return false; // we don't like these? TODO
@@ -277,7 +276,6 @@ public:
 				return Datatype(baseTypes.size(), baseTypes);
 			} else if (typeConstant == TYPEOF) {
 				newType = call_input_types[self.refIndex0()];
-				cout << self.asString() << " vs " << newType.asString() << endl; //XXX
 				parse_validate(!func_input_types[self.refIndex0()].isAbstract() || func_input_types[self.refIndex0()].isIndependantAbstract(), declLine, "A typeof() expression must reference a concrete or independent abstract type");
 			} else if (typeConstant == STRONGESTOF) {
 				vector<Datatype> callTypes;
